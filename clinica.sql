@@ -1,20 +1,20 @@
 -- Drop existing tables if they exist (in reverse dependency order)
-DROP TABLE IF EXISTS DentistSpecialties;
-DROP TABLE IF EXISTS Visits;
-DROP TABLE IF EXISTS Dentists;
-DROP TABLE IF EXISTS Patients;
-DROP TABLE IF EXISTS Admins;
-DROP TABLE IF EXISTS Schedules;
-DROP TABLE IF EXISTS Specialties;
+DROP TABLE IF EXISTS dentist_specialties;
+DROP TABLE IF EXISTS visits;
+DROP TABLE IF EXISTS dentists;
+DROP TABLE IF EXISTS patients;
+DROP TABLE IF EXISTS admins;
+DROP TABLE IF EXISTS schedules;
+DROP TABLE IF EXISTS specialties;
 
 -- Specialties table
-CREATE TABLE Specialties (
+CREATE TABLE specialties (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE
 );
 
 -- Schedules table
-CREATE TABLE Schedules (
+CREATE TABLE schedules (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     firstDay ENUM('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY') NOT NULL,
     lastDay ENUM('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY') NOT NULL,
@@ -23,17 +23,17 @@ CREATE TABLE Schedules (
 );
 
 -- Dentists table
-CREATE TABLE Dentists (
+CREATE TABLE dentists (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     user VARCHAR(50) NOT NULL,
     password VARCHAR(100) NOT NULL,
     idSchedule BIGINT NOT NULL,
-    FOREIGN KEY (idSchedule) REFERENCES Schedules(id) ON DELETE RESTRICT
+    FOREIGN KEY (idSchedule) REFERENCES schedules(id) ON DELETE RESTRICT
 );
 
 -- Admins table
-CREATE TABLE Admins (
+CREATE TABLE admins (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     user VARCHAR(50) NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE Admins (
 );
 
 -- Patients table
-CREATE TABLE Patients (
+CREATE TABLE patients (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     bornDate DATE NOT NULL,
@@ -51,16 +51,16 @@ CREATE TABLE Patients (
 );
 
 -- DentistSpecialties relationship (many-to-many)
-CREATE TABLE DentistSpecialties (
+CREATE TABLE dentist_specialties (
     dentistId BIGINT,
     specialtyId BIGINT,
     PRIMARY KEY (dentistId, specialtyId),
-    FOREIGN KEY (dentistId) REFERENCES Dentists(id) ON DELETE CASCADE,
-    FOREIGN KEY (specialtyId) REFERENCES Specialties(id) ON DELETE CASCADE
+    FOREIGN KEY (dentistId) REFERENCES dentists(id) ON DELETE CASCADE,
+    FOREIGN KEY (specialtyId) REFERENCES specialties(id) ON DELETE CASCADE
 );
 
 -- Visits table
-CREATE TABLE Visits (
+CREATE TABLE visits (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     reason ENUM('ROUTINE_CHECKUP', 'CAVITY', 'BROKEN_TOOTH', 'OTHER') NOT NULL,
     comment TEXT,
@@ -72,12 +72,12 @@ CREATE TABLE Visits (
     -- Create unique constraint for date-time-dentist combination
     UNIQUE KEY unique_visit_datetime_dentist (date, time, idDentist),
     
-    FOREIGN KEY (idPatient) REFERENCES Patients(id) ON DELETE CASCADE,
-    FOREIGN KEY (idDentist) REFERENCES Dentists(id) ON DELETE CASCADE
+    FOREIGN KEY (idPatient) REFERENCES patients(id) ON DELETE CASCADE,
+    FOREIGN KEY (idDentist) REFERENCES dentists(id) ON DELETE CASCADE
 );
 
 -- Create useful indexes
-CREATE INDEX idx_visits_patient ON Visits(idPatient);
-CREATE INDEX idx_visits_dentist ON Visits(idDentist);
-CREATE INDEX idx_visits_date_time ON Visits(date, time);
-CREATE INDEX idx_dentists_schedule ON Dentists(idSchedule);
+CREATE INDEX idx_visits_patient ON visits(idPatient);
+CREATE INDEX idx_visits_dentist ON visits(idDentist);
+CREATE INDEX idx_visits_date_time ON visits(date, time);
+CREATE INDEX idx_dentists_schedule ON dentists(idSchedule);
