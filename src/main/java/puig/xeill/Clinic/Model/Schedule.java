@@ -16,7 +16,7 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "schedules")
+@Table(name = "Schedules")
 public class Schedule {
     @Id
     private Long id;
