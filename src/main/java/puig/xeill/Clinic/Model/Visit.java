@@ -1,12 +1,12 @@
 package puig.xeill.Clinic.Model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import puig.xeill.Clinic.Model.Enums.VisitReason;
+import puig.xeill.Clinic.Model.Persons.Dentist;
 
 import java.util.Date;
 
@@ -21,6 +21,12 @@ public class Visit {
     private VisitReason reason;
     private String comment;
     private Date date;
+
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "id", table = "patients")
     private long idPatient;
-    private long idDentist;
+
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "id", table = "dentists")
+    private long id_dentist;
 }

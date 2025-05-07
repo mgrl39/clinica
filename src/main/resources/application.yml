@@ -3,9 +3,9 @@ spring:
     name: Clinic
 
   datasource:
-    username: usuario
-    password: usuario
-    url: jdbc:mysql://10.2.244.119:3306/commander_reliquary
+    username: root
+    password: Root@1234
+    url: jdbc:mysql://192.168.237.235:3306/clinica
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
