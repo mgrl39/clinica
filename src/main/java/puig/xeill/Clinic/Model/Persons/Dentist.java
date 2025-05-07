@@ -1,7 +1,6 @@
 package puig.xeill.Clinic.Model.Persons;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,5 +19,11 @@ import java.util.List;
 public class Dentist extends User {
     private Long idShedule;
 
+    @ManyToMany
+    @JoinTable(
+            name = "dentist_specialties",
+            joinColumns = @JoinColumn(name = "dentist_id"),
+            inverseJoinColumns = @JoinColumn(name = "specialty_id")
+    )
     private List<Specialty> specialties;
 }

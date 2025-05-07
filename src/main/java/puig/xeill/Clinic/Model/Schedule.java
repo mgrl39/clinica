@@ -1,6 +1,7 @@
 package puig.xeill.Clinic.Model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,7 +18,9 @@ import java.util.Date;
 @AllArgsConstructor
 @Table(name = "schedules")
 public class Schedule {
+    @Id
     private Long id;
+
     private WeekDay firstDay;
     private WeekDay lastDay;
     private Date firstHour;

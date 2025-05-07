@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import puig.xeill.Clinic.Model.Enums.VisitReason;
 import puig.xeill.Clinic.Model.Persons.Dentist;
+import puig.xeill.Clinic.Model.Persons.Patient;
 
 import java.util.Date;
 
@@ -17,16 +18,18 @@ import java.util.Date;
 @AllArgsConstructor
 @Table(name = "visits")
 public class Visit {
+    @Id
     private Long id;
+
     private VisitReason reason;
     private String comment;
     private Date date;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "id", table = "patients")
-    private long idPatient;
+    @JoinColumn(name = "patient_id")
+    private Patient idPatient;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "id", table = "dentists")
-    private long id_dentist;
+    @JoinColumn(name = "dentists_id")
+    private Dentist id_dentist;
 }
