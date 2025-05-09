@@ -16,10 +16,10 @@ CREATE TABLE specialties (
 -- Schedules table
 CREATE TABLE schedules (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    firstDay ENUM('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY') NOT NULL,
-    lastDay ENUM('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY') NOT NULL,
-    firstHour TIME NOT NULL,
-    lastHour TIME NOT NULL
+    first_day ENUM('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY') NOT NULL,
+    last_day ENUM('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY') NOT NULL,
+    first_hour TIME NOT NULL,
+    last_hour TIME NOT NULL
 );
 
 -- Dentists table
