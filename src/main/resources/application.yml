@@ -3,9 +3,9 @@ spring:
     name: Clinic
 
   datasource:
-    username: root
-    password: Root@1234
-    url: jdbc:mysql://192.168.237.235:3306/clinica
+    username: clinica_user
+    password: clinica_password
+    url: jdbc:mysql://172.16.0.158:3306/clinica
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -14,5 +14,8 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         format_sql: true
+        use_sql_comments: true
         dialect: org.hibernate.dialect.MySQLDialect

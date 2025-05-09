@@ -1,7 +1,6 @@
 package puig.xeill.Clinic.Model.Persons;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +8,7 @@ import lombok.Setter;
 import puig.xeill.Clinic.Model.Enums.BloodType;
 import puig.xeill.Clinic.Model.Enums.TypeOfPatient;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -18,8 +18,11 @@ import java.util.Date;
 @AllArgsConstructor
 @Table(name = "patients")
 public class Patient extends Person{
-    private Date bornDate;
+    private LocalDate bornDate;
     private String dni;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
     private TypeOfPatient type;
-    private BloodType blood;
+    private BloodType bloodType;
 }

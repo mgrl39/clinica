@@ -10,6 +10,7 @@ import puig.xeill.Clinic.Model.Schedule;
 import puig.xeill.Clinic.Repository.AdminRepository;
 import puig.xeill.Clinic.Repository.ScheduleRepository;
 
+import java.util.Date;
 import java.util.Optional;
 
 @RestController
@@ -23,8 +24,9 @@ public class AdminController {
     public Optional<Admin> show(@PathVariable Long id) {
 
         System.out.println(id);
-        Optional<Admin> shcedule = adminRepository.findById(id);
-        return shcedule;
+        Optional<Admin> admin = adminRepository.findById(id);
+        System.out.println(new Date());
+        return admin;
         //return null;
     }
 }

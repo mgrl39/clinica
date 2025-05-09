@@ -9,12 +9,11 @@ import java.util.Collection;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("shedules")
+@RequestMapping("schedules")
 public class SchduleController {
 
     @Autowired
     ScheduleRepository scheduleRepository;
-
 
     public String create(@RequestBody Schedule shedule){
         return "";
@@ -25,10 +24,7 @@ public class SchduleController {
 
     @GetMapping("/show/{id}")
     public Optional<Schedule> show(@PathVariable Long id) {
-
-        System.out.println(id);
-        Optional<Schedule> shcedule = scheduleRepository.findById(id);
-        return shcedule;
-        //return null;
+        Optional<Schedule> schedule = scheduleRepository.findById(id);
+        return schedule;
     }
 }
