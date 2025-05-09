@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("shedules")
+@RequestMapping("schedules")
 public class SchduleController {
 
     @Autowired
