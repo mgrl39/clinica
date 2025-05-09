@@ -1,0 +1,39 @@
+package puig.xeill.Clinic.Controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import puig.xeill.Clinic.Model.Persons.Admin;
+import puig.xeill.Clinic.Model.Persons.Patient;
+import puig.xeill.Clinic.Repository.PatientRepository;
+
+import java.util.Date;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("patients")
+public class PatientController {
+    @Autowired
+    PatientRepository patientRepository;
+
+
+    @GetMapping("/show/{id}")
+    public Optional<Patient> show(@PathVariable Long id) {
+
+        System.out.println(id);
+        Optional<Patient> patient = patientRepository.findById(id);
+        System.out.println(new Date());
+        return patient;
+        //return null;
+    }
+
+    @PostMapping("/create")
+    public Patient show(@RequestBody Patient patient) {
+
+        patientRepository.save(patient);
+
+        return null;
+        //return null;
+    }
+
+
+}
