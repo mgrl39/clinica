@@ -21,7 +21,8 @@ help:
 	@echo "  make configure       - Configures MySQL for external access"
 	@echo "  make create-db       - Creates the database and user"
 	@echo "  make initialize      - Loads clinica.sql into the database"
-	@echo "  make all             - Executes the full setup (create, install, configure, create-db, initialize)"
+	@echo "  make seed            - Loads seeder.sql into the database"
+	@echo "  make all             - Executes the full setup (create, install, configure, create-db, initialize, seed)"
 	@echo "  make clean           - Removes the database and user"
 	@echo "  make fclean          - Completely removes the container"
 	@echo "  make shell           - Accesses the container shell"
@@ -59,8 +60,15 @@ configure: install
 		sed -i 's/127.0.0.1/0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf && \
 		systemctl restart mysql"
 	@lxc exec $(CONTAINER_NAME) -- bash -c "\
-		mysql -u root -e \"ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$(MYSQL_ROOT_PASSWORD)';\" && \
-		mysql -u root -p$(MYSQL_ROOT_PASSWORD) -e \"FLUSH PRIVILEGES;\""
+		if mysql -u root -e \"SELECT 1\" >/dev/null 2>&1; then \
+			mysql -u root -e \"ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$(MYSQL_ROOT_PASSWORD)';\" && \
+			mysql -u root -p$(MYSQL_ROOT_PASSWORD) -e \"FLUSH PRIVILEGES;\"; \
+		elif mysql -u root -p$(MYSQL_ROOT_PASSWORD) -e \"SELECT 1\" >/dev/null 2>&1; then \
+			echo \"MySQL already configured with password.\"; \
+		else \
+			echo \"Cannot access MySQL. Please check your credentials.\"; \
+			exit 1; \
+		fi"
 
 # Create the database and user
 .PHONY: create-db
@@ -79,11 +87,24 @@ initialize: create-db
 	@lxc file push clinica.sql $(CONTAINER_NAME)/root/clinica.sql
 	@lxc exec $(CONTAINER_NAME) -- bash -c "\
 		mysql -u root -p$(MYSQL_ROOT_PASSWORD) $(MYSQL_DATABASE) < /root/clinica.sql"
-	@echo "$(GREEN)Database initialized successfully.$(NC)"
+	@echo "$(GREEN)Database schema initialized successfully.$(NC)"
+
+# Load seeder.sql into the database (standalone version)
+.PHONY: seed-only
+seed-only:
+	@echo "$(GREEN)Seeding the database with test data from seeder.sql...$(NC)"
+	@lxc file push seeder.sql $(CONTAINER_NAME)/root/seeder.sql
+	@lxc exec $(CONTAINER_NAME) -- bash -c "\
+		mysql -u root -p$(MYSQL_ROOT_PASSWORD) $(MYSQL_DATABASE) < /root/seeder.sql"
+	@echo "$(GREEN)Database seeded successfully.$(NC)"
+
+# Load seeder.sql into the database (dependency version)
+.PHONY: seed
+seed: initialize seed-only
 
 # Run the full setup
 .PHONY: all
-all: create install configure create-db initialize
+all: create install configure create-db initialize seed-only
 
 # Remove the database and user
 .PHONY: clean
