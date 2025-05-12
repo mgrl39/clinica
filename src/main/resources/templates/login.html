@@ -2,15 +2,25 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Login Clínica Odontológica</title>
+    <link rel="stylesheet" href="assets/login.css">
 </head>
 <body>
-<form action="" method="post">
-    <label for="fname">First name:</label><br>
-    <input type="text" id="fname" name="fname" value="John"><br>
-    <label for="lname">Last name:</label><br>
-    <input type="text" id="lname" name="lname" value="Doe"><br><br>
-    <input type="submit" value="Submit">
-</form>
+<div class="login-container">
+    <div class="login-card">
+        <div class="image-section">
+            <img th:src="@{/images/dentista.jpg}" alt="Dentista con paciente">
+        </div>
+        <div class="form-section">
+            <h2>Ingreso Clínica</h2>
+            <form th:action="@{/login}" method="post">
+                <input type="text" name="username" placeholder="usuario" required>
+                <input type="password" name="password" placeholder="Contraseña" required>
+                <button type="submit">Ingresar</button>
+            </form>
+        </div>
+    </div>
+</div>
 </body>
 </html>
+
