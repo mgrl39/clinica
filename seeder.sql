@@ -34,7 +34,7 @@ INSERT INTO dentists (name, user, password, idSchedule) VALUES
 ('Dr. Pedro Sánchez', 'pedro', '$2a$10$AmXTaZaUs0MsxhESLIgJHOIRFHBMQsQJFfaSXWAOllWIu7a4hNFQK', 5); -- password: pedro456
 
 -- Insertar pacientes
-INSERT INTO patients (name, bornDate, dni, type, blood_type) VALUES
+INSERT INTO patients (name, born_date, dni, type, blood_type) VALUES
 ('Carmen López', '1985-06-15', '12345678A', 'MUTUAL', 'A_POSITIVE'),
 ('Roberto Martín', '1990-03-22', '23456789B', 'PARTICULAR', 'O_NEGATIVE'),
 ('Elena Gómez', '1978-11-30', '34567890C', 'MUTUAL', 'B_POSITIVE'),
