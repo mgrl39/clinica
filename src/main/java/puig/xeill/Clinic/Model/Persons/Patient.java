@@ -24,5 +24,8 @@ public class Patient extends Person{
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
     private TypeOfPatient type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "blood_type")
     private BloodType bloodType;
 }

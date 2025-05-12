@@ -20,9 +20,11 @@ public class PatientController {
     public Optional<Patient> show(@PathVariable Long id) {
 
         System.out.println(id);
+
         Optional<Patient> patient = patientRepository.findById(id);
         System.out.println(new Date());
-        return patient;
+        if (patient.isPresent()) return patient;
+        else return null;
         //return null;
     }
 
