@@ -47,7 +47,7 @@ CREATE TABLE patients (
     bornDate DATE NOT NULL,
     dni VARCHAR(20) NOT NULL UNIQUE,
     type ENUM('MUTUAL', 'PARTICULAR') NOT NULL,
-    bloodType ENUM('A_POSITIVE', 'A_NEGATIVE', 'B_POSITIVE', 'B_NEGATIVE', 'O_POSITIVE', 'O_NEGATIVE', 'AB_POSITIVE', 'AB_NEGATIVE') NOT NULL
+    blood_type ENUM('A_POSITIVE', 'A_NEGATIVE', 'B_POSITIVE', 'B_NEGATIVE', 'O_POSITIVE', 'O_NEGATIVE', 'AB_POSITIVE', 'AB_NEGATIVE') NOT NULL
 );
 
 -- DentistSpecialties relationship (many-to-many)
