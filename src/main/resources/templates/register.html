@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Login Clínica Odontológica</title>
+    <link rel="stylesheet" href="assets/login.css" />
+    <script src="scripts/login.js"></script>
+</head>
+<body>
+<div class="login-container">
+    <div class="login-card">
+        <div class="image-section">
+            <img th:src="@{/assets/dentist.jpg}" alt="Dentista con paciente" />
+        </div>
+        <div class="form-section">
+            <h2>Ingreso Clínica</h2>
+            <form id="loginForm">
+                <input type="text" name="username" placeholder="usuario" required />
+                <input
+                        type="password"
+                        name="password"
+                        placeholder="Contraseña"
+                        required
+                />
+                <button type="submit">Ingresar</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
