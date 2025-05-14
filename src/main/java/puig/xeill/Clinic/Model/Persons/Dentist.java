@@ -1,10 +1,7 @@
 package puig.xeill.Clinic.Model.Persons;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import puig.xeill.Clinic.Model.Specialty;
 import puig.xeill.Clinic.Model.Visit;
 
@@ -15,9 +12,10 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Table(name = "dentists")
 public class Dentist extends User {
-    private Long idShedule;
+    private Long idSchedule;
 
     @ManyToMany
     @JoinTable(

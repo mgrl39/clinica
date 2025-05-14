@@ -20,9 +20,9 @@ public class Security {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        return http.authorizeHttpRequests(request ->
-                                request.requestMatchers("/**").permitAll()
-                ).build();
+        return http.csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(request ->
 
+                                request.requestMatchers("/**").permitAll()).build();
     }
 }
