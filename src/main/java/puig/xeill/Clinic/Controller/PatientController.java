@@ -46,26 +46,4 @@ public class PatientController {
         //return null;
     }
 
-    @PostMapping("login")
-    public HashMap<String, String> loginAdmin(@RequestBody Patient patient) throws NoSuchAlgorithmException, KeyStoreException {
-
-        Optional<Patient> optionalPatient = patientRepository.findByDni(patient.getDni());
-        if (!optionalPatient.isPresent()) {
-            return null;
-        }
-
-        if (passwordEncoder.matches(patient.getPassword(), optionalPatient.get().getPassword())) {
-
-            String token = jwtUtil.generateToken(patient.getUser());
-
-            HashMap<String, String> data = new HashMap<>();
-            data.put("token", token);
-            data.put("rol", "admin");
-
-            return data;
-        }
-
-        return null;
-    }
-
 }
