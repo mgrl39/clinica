@@ -16,6 +16,7 @@ import java.util.List;
 @Table(name = "dentists")
 public class Dentist {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private Long idSchedule;
