@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
             };
 
             // Send login request to backend
-            fetch("/users/login", {
+                fetch("/dentists/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
