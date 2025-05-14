@@ -28,8 +28,8 @@ CREATE TABLE dentists (
     name VARCHAR(100) NOT NULL,
     user VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
-    idSchedule BIGINT NOT NULL,
-    FOREIGN KEY (idSchedule) REFERENCES schedules(id) ON DELETE RESTRICT
+    id_schedule BIGINT NOT NULL,
+    FOREIGN KEY (id_schedule) REFERENCES schedules(id) ON DELETE RESTRICT
 );
 
 -- Admins table
@@ -80,4 +80,4 @@ CREATE TABLE visits (
 CREATE INDEX idx_visits_patient ON visits(idPatient);
 CREATE INDEX idx_visits_dentist ON visits(idDentist);
 CREATE INDEX idx_visits_date_time ON visits(date, time);
-CREATE INDEX idx_dentists_schedule ON dentists(idSchedule);
+CREATE INDEX idx_dentists_schedule ON dentists(id_schedule);
