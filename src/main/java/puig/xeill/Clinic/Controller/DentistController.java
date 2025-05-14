@@ -31,7 +31,7 @@ public class DentistController {
         return 0L;
     }
 
-    @PostMapping("login/dentist")
+    @PostMapping("login")
     public String loginDentist(@RequestBody Dentist user) throws NoSuchAlgorithmException, KeyStoreException {
 
         Optional<Dentist> dentistOptional = dentistRepository.findByUser(user.getUser());
@@ -47,16 +47,11 @@ public class DentistController {
         return null;
     }
 
-    @PostMapping("/register")
-    public Dentist register(@RequestBody Dentist dentist, @RequestBody String confirmPass) throws NoSuchAlgorithmException, KeyStoreException {
-        //Comprobar si las contraseñas son iguales
-        if(dentist.getPassword().equals(confirmPass)) {
-            //Setear la contraseña del user hasheada y guardarlo en la DB
+    @PostMapping("/create")
+    public Dentist register(@RequestBody Dentist dentist) throws NoSuchAlgorithmException, KeyStoreException {
             dentist.setPassword(passwordEncoder.encode(dentist.getPassword()));
             dentistRepository.save(dentist);
             return dentist;
-        }
-        return null;
     }
 
 
