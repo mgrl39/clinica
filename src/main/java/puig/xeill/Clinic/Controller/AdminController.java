@@ -1,6 +1,8 @@
 package puig.xeill.Clinic.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import puig.xeill.Clinic.Model.Persons.Admin;
@@ -10,6 +12,7 @@ import puig.xeill.Clinic.Repository.AdminRepository;
 import puig.xeill.Clinic.Repository.DentistRepository;
 import puig.xeill.Clinic.Repository.PatientRepository;
 import puig.xeill.Clinic.Repository.ScheduleRepository;
+import puig.xeill.Clinic.Security.JwtUtil;
 
 import java.util.Date;
 import java.util.Optional;
@@ -24,6 +27,11 @@ public class AdminController {
     DentistRepository dentistRepository;
 
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    //@Autowired
+    JwtUtil jwtUtil = new JwtUtil();
 
     @GetMapping("/show/{id}")
     public Optional<Admin> show(@PathVariable Long id) {

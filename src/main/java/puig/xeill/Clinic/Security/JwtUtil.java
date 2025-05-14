@@ -4,6 +4,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.crypto.KeyGenerator;
 import java.security.Key;
@@ -13,6 +16,7 @@ import java.security.SecureRandom;
 import java.util.Date;
 
 public class JwtUtil {
+
     //@Value("#{aplication.security.jwt.secret-key}")
     private String keyOrigin = "+Ck0TDxFSrboNXUZxLZEDSMZK4glQ3EJJyeFAaQe4ghKXftfH2Hyi5eDjEwTg";
 

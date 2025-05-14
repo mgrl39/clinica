@@ -1,6 +1,8 @@
 package puig.xeill.Clinic.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +19,8 @@ import puig.xeill.Clinic.Security.JwtUtil;
 import java.lang.reflect.Array;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -33,13 +37,14 @@ public class UserController {
     AdminController adminController;
 
     @Autowired
-    JwtUtil jwtUtil;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    PasswordEncoder passwordEncoder;
+
+    //@Autowired
+    JwtUtil jwtUtil = new JwtUtil();
 
 
     @PostMapping("login")
-    public String loginAndCHeckUser(@RequestBody User user) throws NoSuchAlgorithmException, KeyStoreException {
+    public HashMap<String, String> loginAndCHeckUser(@RequestBody User user) throws NoSuchAlgorithmException, KeyStoreException {
 
         Optional<Dentist> dentistOptional = dentistRepository.findByUser(user.getName());
 
@@ -48,16 +53,29 @@ public class UserController {
 
             if (!optionalAdmin.isPresent()) {
                 //String [] data = {"Error","User not found"};
-
+                return null;
             }
             else {
                 if(passwordEncoder.matches(user.getPassword(), optionalAdmin.get().getPassword())){
                     String token = jwtUtil.generateToken(user.getUser());
-                    return token;
+                    HashMap<String, String> data = new HashMap<String, String>();
+                    data.put("token", token);
+                    data.put("rol","admin");
+
+                    return data;
                 }
 
             }
             return null;
+        }
+
+        if(passwordEncoder.matches(user.getPassword(), dentistOptional.get().getPassword())){
+            String token = jwtUtil.generateToken(user.getUser());
+            HashMap<String, String> data = new HashMap<String, String>();
+            data.put("token", token);
+            data.put("rol","dentist");
+
+            return data;
         }
 
 
