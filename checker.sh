@@ -25,5 +25,14 @@ for name in "${!endpoints[@]}"; do
     fi
 done
 
+curl -X POST \
+  http://localhost:8080/users/login \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "username",
+    "password": "password",
+    "user": "username"
+  }'
+
 echo "=== Finished ==="
 
