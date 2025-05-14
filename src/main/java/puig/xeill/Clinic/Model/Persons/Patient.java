@@ -17,7 +17,10 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "patients")
-public class Patient extends Person{
+public class Patient {
+    @Id
+    private Long id;
+    private String name;
     private LocalDate bornDate;
     private String dni;
 
