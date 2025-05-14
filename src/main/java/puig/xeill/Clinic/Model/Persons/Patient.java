@@ -19,6 +19,7 @@ import java.util.Date;
 @Table(name = "patients")
 public class Patient {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private LocalDate bornDate;
