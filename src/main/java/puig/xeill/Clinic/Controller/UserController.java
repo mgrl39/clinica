@@ -31,66 +31,10 @@ public class UserController {
     @Autowired
     AdminController adminController;
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    //@Autowired
-    JwtUtil jwtUtil = new JwtUtil();
 
 
-    @PostMapping("login/dentist")
-    public HashMap<String, String> loginDentist(@RequestBody Dentist user) throws NoSuchAlgorithmException, KeyStoreException {
 
-        // Buscar dentista por nombre de usuario
-        Optional<Dentist> dentistOptional = dentistRepository.findByUser(user.getUser());
 
-        // Si no se encuentra, devolver null
-        if (!dentistOptional.isPresent()) {
-            return null;
-        }
 
-        // Verificar si la contraseña coincide
-        if (passwordEncoder.matches(user.getPassword(), dentistOptional.get().getPassword())) {
-            // Generar token
-            String token = jwtUtil.generateToken(user.getUser());
 
-            // Crear el mapa con el token y rol
-            HashMap<String, String> data = new HashMap<>();
-            data.put("token", token);
-            data.put("rol", "dentist");
-
-            return data;
-        }
-
-        // Si las contraseñas no coinciden
-        return null;
-    }
-
-    @PostMapping("admin/login")
-    public HashMap<String, String> loginAdmin(@RequestBody Admin user) throws NoSuchAlgorithmException, KeyStoreException {
-
-        // Buscar admin por nombre de usuario
-        Optional<Admin> optionalAdmin = adminRepository.findByUser(user.getUser());
-
-        // Si no se encuentra el admin, devolver null
-        if (!optionalAdmin.isPresent()) {
-            return null;
-        }
-
-        // Verificar si la contraseña coincide
-        if (passwordEncoder.matches(user.getPassword(), optionalAdmin.get().getPassword())) {
-            // Generar token
-            String token = jwtUtil.generateToken(user.getUser());
-
-            // Crear el mapa con el token y rol
-            HashMap<String, String> data = new HashMap<>();
-            data.put("token", token);
-            data.put("rol", "admin");
-
-            return data;
-        }
-
-        // Si las contraseñas no coinciden
-        return null;
-    }
 }
