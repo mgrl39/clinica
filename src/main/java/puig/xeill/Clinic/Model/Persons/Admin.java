@@ -1,6 +1,7 @@
 package puig.xeill.Clinic.Model.Persons;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
 
@@ -10,6 +11,11 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 @Table(name = "Admins")
-public class Admin extends User {
+public class Admin {
+    @Id
+    private Long id;
 
+    private String name;
+    private String user;
+    private String password;
 }

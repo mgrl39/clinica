@@ -14,9 +14,14 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 @Table(name = "dentists")
-public class Dentist extends User {
-    private Long idSchedule;
+public class Dentist {
+    @Id
+    private Long id;
 
+    private Long idSchedule;
+    private String user;
+    private String password;
+    private String name;
     @ManyToMany
     @JoinTable(
             name = "dentist_specialties",
