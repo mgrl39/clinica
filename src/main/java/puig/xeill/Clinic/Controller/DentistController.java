@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import puig.xeill.Clinic.Model.Persons.Dentist;
+import puig.xeill.Clinic.Model.Specialty;
 import puig.xeill.Clinic.Repository.DentistRepository;
+import puig.xeill.Clinic.Repository.SpecialtyRepository;
 import puig.xeill.Clinic.Security.JwtUtil;
 
 import java.security.KeyStoreException;
@@ -20,6 +22,9 @@ public class DentistController {
 
     @Autowired
     DentistRepository dentistRepository;
+
+    @Autowired
+    SpecialtyRepository specialtyRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -50,6 +55,7 @@ public class DentistController {
     @PostMapping("/create")
     public Dentist register(@RequestBody Dentist dentist) throws NoSuchAlgorithmException, KeyStoreException {
             dentist.setPassword(passwordEncoder.encode(dentist.getPassword()));
+            //List<Specialty> specialties = specialtyRepository.findAllById(dentist.getSpecialties().get().getId());
             dentistRepository.save(dentist);
             return dentist;
     }
