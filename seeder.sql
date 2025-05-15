@@ -26,7 +26,7 @@ INSERT INTO admins (name, user, password) VALUES
 ('Juan López', 'juan', '$2a$10$L7xt.LOg7eN4r9smn68QT.c48h1jRtY7h3xv4z3xD0h5lLSFpZ8RO'); -- password: juan789
 
 -- Insertar dentistas
-INSERT INTO dentists (name, user, password, idSchedule) VALUES
+INSERT INTO dentists (name, user, password, id_schedule) VALUES
 ('Dr. Carlos Rodríguez', 'carlos', '$2a$10$2JkPWnaItQRSm7HLztzRO.5y.YwMJL5P1FhZUy5RKEexJr4O1Bk1i', 1), -- password: carlos123
 ('Dra. Ana Martínez', 'ana', '$2a$10$FnVJAVyt3dBGQu3s6B/useU1G1QBGUPRxtZ9Wn94N.oH8.q5AoOC2', 2), -- password: ana456
 ('Dr. Miguel Fernández', 'miguel', '$2a$10$jPAGaOZ/x5vkMgI8jXUO7.9zw1MxEAaCDGe7Y8VR3IP2jz.YzKMwS', 3), -- password: miguel789
