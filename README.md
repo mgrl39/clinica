@@ -43,16 +43,11 @@ El proyecto utiliza una arquitectura moderna con un backend robusto en Spring Bo
 - **Gestión de Usuarios**: 
   - Administradores con acceso total al sistema
   - Odontólogos con acceso a su agenda y pacientes asignados
-  - (Actualmente los pacientes no tienen acceso al sistema)
 
 - **Gestión de Citas**: 
   - Programación de citas médicas
   - Asignación de odontólogos a pacientes
   - Administración de horarios disponibles
-
-- **Historial Clínico**: 
-  - Registro y seguimiento de historial médico de pacientes
-  - Documentación de tratamientos realizados
 
 - **Autenticación y Seguridad**: 
   - Sistema de login seguro con JWT
@@ -85,7 +80,7 @@ El sistema sigue una arquitectura de tres capas:
 | Tecnología | Descripción |
 |------------|-------------|
 | **Java** | Lenguaje principal de desarrollo |
-| **Spring Boot** | Framework para el desarrollo del backend |
+| **Spring Boot** | Framework para el desarrollo |
 | **Spring Security** | Gestión de autenticación y autorización |
 | **Spring Data JPA** | Persistencia de datos con JPA |
 | **JWT** | JSON Web Tokens para la autenticación |
