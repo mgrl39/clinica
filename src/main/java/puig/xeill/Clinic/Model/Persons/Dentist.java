@@ -6,6 +6,7 @@ import puig.xeill.Clinic.Model.Specialty;
 import puig.xeill.Clinic.Model.Visit;
 
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 @Getter

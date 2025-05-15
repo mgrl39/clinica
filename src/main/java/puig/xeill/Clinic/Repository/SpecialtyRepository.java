@@ -7,5 +7,5 @@ import puig.xeill.Clinic.Model.Visit;
 import java.util.List;
 
 public interface SpecialtyRepository extends JpaRepository<Specialty, Long> {
-    List<Specialty> findAllById(List<Long> ids);
+    //List<Specialty> findAllById(List<Long> ids);
 }
