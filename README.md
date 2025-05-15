@@ -13,8 +13,6 @@
 <a href="#-instalación-y-ejecución">Instalación y Ejecución</a>
 <span>&nbsp;&nbsp;❖&nbsp;&nbsp;</span>
 <a href="#-estado-del-proyecto">Estado del Proyecto</a>
-<span>&nbsp;&nbsp;❖&nbsp;&nbsp;</span>
-<a href="#-licencia">Licencia</a>
 
 <p align="center">
   <img src="src/main/resources/static/favicon.ico" width="20%" alt="Logo de Clínica Dental">
