@@ -1,131 +1,158 @@
-# Clínica
+<div align="center">
 
-Sistema de gestión para clínicas dentales que facilita la administración de pacientes, odontólogos y citas médicas.
+<p></p>
 
-![Java](https://img.shields.io/badge/Java-100%25-orange)
-![License](https://img.shields.io/badge/License-MIT-blue)
+<a href="#-introducción">Introducción</a>
+<span>&nbsp;&nbsp;❖&nbsp;&nbsp;</span>
+<a href="#-funcionalidad">Funcionalidad</a>
+<span>&nbsp;&nbsp;❖&nbsp;&nbsp;</span>
+<a href="#-arquitectura">Arquitectura</a>
+<span>&nbsp;&nbsp;❖&nbsp;&nbsp;</span>
+<a href="#-stack">Stack</a>
+<span>&nbsp;&nbsp;❖&nbsp;&nbsp;</span>
+<a href="#-instalación-y-ejecución">Instalación y Ejecución</a>
+<span>&nbsp;&nbsp;❖&nbsp;&nbsp;</span>
+<a href="#-estado-del-proyecto">Estado del Proyecto</a>
+<span>&nbsp;&nbsp;❖&nbsp;&nbsp;</span>
+<a href="#-licencia">Licencia</a>
 
-## 📋 Descripción
+<p align="center">
+  <img src="src/main/resources/static/images/clinica-logo.png" width="20%" alt="Logo de Clínica Dental">
+</p>
 
-Clínica es una aplicación web desarrollada para gestionar de forma eficiente los datos y visitas de pacientes en una clínica odontológica. Permite a los administradores y odontólogos controlar citas, pacientes, horarios y tratamientos en un solo sistema integrado.
+![Spring Boot Badge](https://img.shields.io/badge/Spring_Boot-6DB33F?logo=spring-boot&logoColor=white&style=flat)
+![Java Badge](https://img.shields.io/badge/Java-007396?logo=java&logoColor=white&style=flat)
+![JWT Badge](https://img.shields.io/badge/JWT-000000?logo=json-web-tokens&logoColor=white&style=flat)
+![MySQL Badge](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white&style=flat)
+![Thymeleaf Badge](https://img.shields.io/badge/Thymeleaf-005F0F?logo=thymeleaf&logoColor=white&style=flat)
+![GitHub stars](https://img.shields.io/github/stars/mgrl39/clinica)
+![GitHub issues](https://img.shields.io/github/issues/mgrl39/clinica)
+![GitHub license](https://img.shields.io/github/license/mgrl39/clinica)
+![Status](https://img.shields.io/badge/Status-En_Desarrollo-yellow)
 
-## ✨ Características principales
+</div>
 
-- **Gestión de odontólogos**
-  - Registro de especialidades
-  - Configuración de horarios personalizados
-  - Asignación de citas según disponibilidad
+## 🧑‍⚕ Introducción
 
-- **Administración de pacientes**
-  - Datos personales completos
-  - Registro de método de pago (particular o mutua)
-  - Gestión especial para pacientes menores de edad con tutores
+**Clinica** es un sistema de gestión para clínicas dentales desarrollado con Spring Boot que facilita la administración de pacientes, odontólogos y citas médicas. La aplicación proporciona una interfaz intuitiva para gestionar los recursos de una clínica dental, optimizando el flujo de trabajo del personal administrativo y médico.
 
-- **Sistema de citas**
-  - Programación respetando horarios de odontólogos
-  - Validación de disponibilidad en tiempo real
-  - Registro de motivos de consulta
+El proyecto utiliza una arquitectura moderna con un backend robusto en Spring Boot y una interfaz de usuario desarrollada con Thymeleaf, proporcionando una experiencia de usuario fluida y responsiva.
 
-- **Seguimiento de tratamientos**
-  - Registro de observaciones post-visita
-  - Prescripción de tratamientos
-  - Historial médico completo
+---
 
-- **Control de acceso**
-  - Diferentes roles de usuario (administrativo, odontólogo)
-  - Autenticación segura
-  - Permisos basados en roles
+## 🌍 Funcionalidades deseadas para desarrollarse
 
-## 🚀 Tecnologías utilizadas
+- **Gestión de Usuarios**: 
+  - Administradores con acceso total al sistema
+  - Odontólogos con acceso a su agenda y pacientes asignados
+  - (Actualmente los pacientes no tienen acceso al sistema)
 
-- **Backend**: Java (Spring Boot)
-- **Base de datos**: MySQL
-- **Frontend**: HTML, CSS, JavaScript (Thymeleaf)
-- **Seguridad**: Spring Security
+- **Gestión de Citas**: 
+  - Programación de citas médicas
+  - Asignación de odontólogos a pacientes
+  - Administración de horarios disponibles
 
-## 🛠️ Instalación y configuración
+- **Historial Clínico**: 
+  - Registro y seguimiento de historial médico de pacientes
+  - Documentación de tratamientos realizados
 
-### Requisitos previos
+- **Autenticación y Seguridad**: 
+  - Sistema de login seguro con JWT
+  - Almacenamiento del token en localStorage
 
-- Java 11 o superior
-- Maven 3.6+
-- MySQL 8.0+
+---
 
-### Pasos para instalación
+## 🏛️ Arquitectura
 
-1. Clonar el repositorio:
-   ```bash
-   git clone https://github.com/mgrl39/clinica.git
-   cd clinica
-   ```
+El sistema sigue una arquitectura de tres capas:
 
-2. Configurar la base de datos MySQL:
-   ```bash
-   # Crear base de datos
-   mysql -u root -p
-   CREATE DATABASE clinica;
-   EXIT;
-   
-   # O utilizar el script incluido
-   ./scripts/setup-database.sh
-   ```
+1. **Capa de Presentación**:
+   - Interfaces de usuario desarrolladas con Thymeleaf
+   - Comunicación con el backend mediante API REST
 
-3. Configurar el archivo de propiedades:
-   ```bash
-   # Editar src/main/resources/application.properties con los datos de conexión
-   spring.datasource.url=jdbc:mysql://localhost:3306/clinica
-   spring.datasource.username=tu_usuario
-   spring.datasource.password=tu_contraseña
-   ```
+2. **Capa de Negocio**:
+   - Controladores REST que manejan las peticiones HTTP
+   - Servicios que implementan la lógica de negocio
+   - Sistema de autenticación basado en JWT
 
-4. Compilar y ejecutar la aplicación:
-   ```bash
-   mvn clean install
-   mvn spring-boot:run
-   ```
+3. **Capa de Datos**:
+   - Entidades JPA para la persistencia de datos
+   - Repositorios para el acceso a la base de datos
+   - Integración con MySQL para el almacenamiento
 
-5. Acceder a la aplicación:
-   ```
-   http://localhost:8080
-   ```
+---
 
-## 📘 Uso
+## 🏗️ Stack
 
-### Acceso al sistema
+| Tecnología | Descripción |
+|------------|-------------|
+| **Java** | Lenguaje principal de desarrollo |
+| **Spring Boot** | Framework para el desarrollo del backend |
+| **Spring Security** | Gestión de autenticación y autorización |
+| **Spring Data JPA** | Persistencia de datos con JPA |
+| **JWT** | JSON Web Tokens para la autenticación |
+| **MySQL** | Base de datos relacional |
+| **Thymeleaf** | Motor de plantillas para vistas |
+| **JavaScript** | Funcionalidades del lado del cliente |
+| **CSS** | Estilos para la interfaz de usuario |
+| **Maven** | Gestión de dependencias y construcción del proyecto |
+| **Makefile** | Automatización de tareas de despliegue |
 
-1. Utilice las credenciales proporcionadas por el administrador
-2. Para desarrollo, usuario predeterminado:
-   - Usuario: `admin`
-   - Contraseña: `admin`
+---
 
-### Administración de odontólogos
+## 🚀 Instalación y Ejecución
 
-- Acceda a "Gestión de Odontólogos" en el menú principal
-- Cree nuevos perfiles con sus especialidades y horarios
-- Consulte la disponibilidad de cada profesional
+### Requisitos Previos
+- Java 17 o superior
+- Maven 3.6 o superior
+- MySQL 8.0 o superior
 
-### Gestión de pacientes
+### Configuración de la Base de Datos
 
-- Registre nuevos pacientes con sus datos completos
-- Asocie tutores para pacientes menores de edad
-- Consulte el historial de visitas y tratamientos
+Para facilitar la configuración del entorno de desarrollo, se ha creado un Makefile automatizado:
 
-### Programación de citas
+```bash
+# Clonar el repositorio
+git clone https://github.com/mgrl39/clinica.git
+cd clinica
 
-- Seleccione fecha, hora y odontólogo
-- El sistema validará automáticamente la disponibilidad
-- Registre el motivo de la consulta
+# Desplegar el contenedor LXC con MySQL configurado
+make all
+```
 
-### Seguimiento de tratamientos
+### Configuración del Proyecto
 
-- Los odontólogos pueden registrar observaciones post-visita
-- Prescribir tratamientos
-- Consultar historial médico completo del paciente
+```bash
+# Instalar dependencias
+mvn clean install
+```
 
-## 📁 Estructura del proyecto
+### Ejecución
 
-TODO 
+```bash
+# Iniciar la aplicación
+mvn spring-boot:run
+```
 
-## 📝 Licencia
+La aplicación estará disponible en `http://localhost:8080`
 
-Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+---
+
+## 📊 Estado del Proyecto
+
+El proyecto se encuentra actualmente en una fase de desarrollo inicial, con los siguientes componentes en progreso:
+
+- ✅ Estructura básica del backend con Spring Boot
+- ✅ Sistema de autenticación JWT inicial
+- ✅ Persistencia de datos con JPA
+
+Próximos pasos:
+- Completar la implementación del backend
+- Desarrollar las interfaces de usuario restantes
+- Implementar la gestión de citas y pacientes
+
+---
+
+## 📄 Licencia
+
+[MIT](LICENSE)
