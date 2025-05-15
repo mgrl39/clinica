@@ -17,7 +17,7 @@
 <a href="#-licencia">Licencia</a>
 
 <p align="center">
-  <img src="src/main/resources/static/images/clinica-logo.png" width="20%" alt="Logo de Clínica Dental">
+  <img src="src/main/resources/static/favicon.ico" width="20%" alt="Logo de Clínica Dental">
 </p>
 
 ![Spring Boot Badge](https://img.shields.io/badge/Spring_Boot-6DB33F?logo=spring-boot&logoColor=white&style=flat)
