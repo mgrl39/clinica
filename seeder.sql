@@ -47,7 +47,7 @@ INSERT INTO patients (name, born_date, dni, type, blood_type) VALUES
 ('Alejandro Díaz', '1980-12-20', '01234567J', 'PARTICULAR', 'O_POSITIVE');
 
 -- Insertar relaciones entre dentistas y especialidades
-INSERT INTO dentist_specialties (dentistId, specialtyId) VALUES
+INSERT INTO dentist_specialties (dentist_id, specialty_id) VALUES
 (1, 1), -- Dr. Carlos: Odontología General
 (1, 6), -- Dr. Carlos: Cirugía Oral
 (2, 2), -- Dra. Ana: Ortodoncia
