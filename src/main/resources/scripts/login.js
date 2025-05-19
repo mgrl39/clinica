@@ -1,55 +1,70 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const loginForm = document.querySelector("form");
+  const loginForm = document.querySelector("form");
+  const loginButton = document.querySelector("button[type='submit']");
+  const errorMessage = document.createElement("div");
+  errorMessage.className = "error-message";
+  errorMessage.style.color = "red";
+  errorMessage.style.marginTop = "10px";
+  errorMessage.style.display = "none";
 
-    if (loginForm) {
-        loginForm.addEventListener("submit", function (event) {
-            event.preventDefault();
+  if (loginForm) {
+    // Add error message element after the form
+    loginForm.after(errorMessage);
 
-            const username = document.querySelector('input[name="username"]').value;
-            const password = document.querySelector('input[name="password"]').value;
+    loginForm.addEventListener("submit", function (event) {
+      event.preventDefault();
 
-            // Create user object to send to backend
-            const userData = {
-                user: username,
-                password: password,
-            };
+      // Show loading state
+      loginButton.disabled = true;
+      loginButton.textContent = "Ingresando...";
+      errorMessage.style.display = "none";
 
-            // Send login request to backend
-                fetch("/dentists/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(userData),
-            })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Login failed");
-                    }
-                    return response.json();
-                })
-                .then((data) => {
-                    if (data && data.token) {
-                        // Store token in localStorage
-                        localStorage.setItem("authToken", data.token);
-                        localStorage.setItem("userRole", data.rol);
+      const username = document.querySelector('input[name="username"]').value;
+      const password = document.querySelector('input[name="password"]').value;
 
-                        // Redirect based on role
-                        if (data.rol === "admin") {
-                            window.location.href = "/home";
-                        } else if (data.rol === "dentist") {
-                            window.location.href = "/home";
-                        } else {
-                            alert("Unknown user role");
-                        }
-                    } else {
-                        alert("Login failed: Invalid credentials");
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error:", error);
-                    alert("Login failed: " + error.message);
-                });
+      // Create user object to send to backend
+      const userData = {
+        user: username,
+        password: password,
+      };
+
+      // Send login request to backend
+      fetch("/dentists/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Credenciales inválidas");
+          }
+          return response.text();
+        })
+        .then((token) => {
+          if (token) {
+            // Store token in localStorage
+            localStorage.setItem("authToken", token);
+
+            // Determine role based on token (could be enhanced with actual role from backend)
+            localStorage.setItem("userRole", "dentist");
+
+            // Redirect to home page
+            window.location.href = "/home";
+          } else {
+            throw new Error("Error de autenticación");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          errorMessage.textContent = error.message || "Error al iniciar sesión";
+          errorMessage.style.display = "block";
+
+          // Reset button state
+          loginButton.disabled = false;
+          loginButton.textContent = "Ingresar";
         });
-    }
+    });
+  }
 });
