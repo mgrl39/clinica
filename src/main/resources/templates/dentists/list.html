@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ver Odontólogos | Clínica Odontológica</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.1.3/css/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.css}" />
+</head>
+<body>
+    <div class="d-flex">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+        <main class="flex-grow-1 p-4">
+            <h1>Clínica Odontológica</h1>
+            <h2 class="mb-3">Ver Odontólogos</h2>
+            <p class="text-muted mb-4">A continuación podrá visualizar la lista completa de odontólogos</p>
+            
+            <!-- Opciones de búsqueda y filtro -->
+            <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex">
+                    <input type="text" class="form-control" placeholder="Buscar odontólogo..." style="width: 250px;">
+                    <button class="btn btn-primary ms-2">Buscar</button>
+                </div>
+                <a href="/dentists/create" class="btn btn-success">
+                    <i class="bi bi-person-plus me-2"></i>Nuevo Odontólogo
+                </a>
+            </div>
+            
+            <!-- Tabla de odontólogos -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Usuario</th>
+                                <th>Especialidades</th>
+                                <th>Horario</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Ejemplo de fila (en producción esto vendría de la base de datos) -->
+                            <tr>
+                                <td>1</td>
+                                <td>Dr. Juan Martínez</td>
+                                <td>jmartinez</td>
+                                <td>
+                                    <span class="badge bg-primary me-1">Odontología General</span>
+                                    <span class="badge bg-info">Ortodoncia</span>
+                                </td>
+                                <td>Lunes a Viernes, 9-14h</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger me-1">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-primary me-1">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Dra. Lucía González</td>
+                                <td>lgonzalez</td>
+                                <td>
+                                    <span class="badge bg-info me-1">Ortodoncia</span>
+                                    <span class="badge bg-warning">Endodoncia</span>
+                                </td>
+                                <td>Martes y Jueves, 16-20h</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger me-1">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-primary me-1">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Navegación móvil -->
+    <div th:replace="~{fragments/sidebar :: mobileNav}"></div>
+    <script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
