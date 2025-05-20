@@ -52,11 +52,11 @@ CREATE TABLE patients (
 
 -- DentistSpecialties relationship (many-to-many)
 CREATE TABLE dentist_specialties (
-    dentistId BIGINT,
-    specialtyId BIGINT,
-    PRIMARY KEY (dentistId, specialtyId),
-    FOREIGN KEY (dentistId) REFERENCES dentists(id) ON DELETE CASCADE,
-    FOREIGN KEY (specialtyId) REFERENCES specialties(id) ON DELETE CASCADE
+    dentist_id BIGINT,
+    specialty_id BIGINT,
+    PRIMARY KEY (dentist_id, specialty_id),
+    FOREIGN KEY (dentist_id) REFERENCES dentists(id) ON DELETE CASCADE,
+    FOREIGN KEY (specialty_id) REFERENCES specialties(id) ON DELETE CASCADE
 );
 
 -- Visits table
