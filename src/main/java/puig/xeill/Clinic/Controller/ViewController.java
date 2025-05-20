@@ -19,4 +19,21 @@ public class ViewController {
         return "home";
     }
 
+    // Panel de acciones de usuarios
+    @GetMapping("/users")
+    public String usersDashboard() {
+        return "users/dashboard";
+    }
+
+    // Listado de usuarios
+    @GetMapping("/users/list")
+    public String usersList() {
+        return "users/list";
+    }
+
+    // Alta de usuarios
+    @GetMapping("/users/create")
+    public String usersCreate() {
+        return "users/create";
+    }
 }
