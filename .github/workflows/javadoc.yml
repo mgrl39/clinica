@@ -2,7 +2,7 @@ name: JavaDoc
 
 on:
   push:
-    branches: [ '**' ]  # Ajusta según tu rama principal (main o master)
+    branches: [ '**' ]
 
 jobs:
   generate-and-publish:
