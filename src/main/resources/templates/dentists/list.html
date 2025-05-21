@@ -2,95 +2,90 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Ver Odontólogos | Clínica Odontológica</title>
+    <title>Lista de Odontólogos | Clínica Odontológica</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.1.3/css/bootstrap.min.css}" />
     <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.css}" />
 </head>
 <body>
-    <div class="d-flex">
+    <div class="d-flex min-vh-100">
+        <!-- Sidebar a la izquierda -->
         <div th:replace="~{fragments/sidebar :: sidebar}"></div>
-        <main class="flex-grow-1 p-4">
-            <h1>Clínica Odontológica</h1>
-            <h2 class="mb-3">Ver Odontólogos</h2>
-            <p class="text-muted mb-4">A continuación podrá visualizar la lista completa de odontólogos</p>
+        
+        <!-- Contenido principal con navbar arriba -->
+        <div class="flex-grow-1 d-flex flex-column">
+            <!-- Navbar superior -->
+            <div th:replace="~{fragments/navbar :: topNav}"></div>
             
-            <!-- Opciones de búsqueda y filtro -->
-            <div class="d-flex justify-content-between mb-3">
-                <div class="d-flex">
-                    <input type="text" class="form-control" placeholder="Buscar odontólogo..." style="width: 250px;">
-                    <button class="btn btn-primary ms-2">Buscar</button>
+            <!-- Contenido principal -->
+            <main class="flex-grow-1 p-4">
+                <h1>Clínica Odontológica</h1>
+                <h2>Lista de Odontólogos</h2>
+                
+                <div class="card shadow-sm mt-4">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Odontólogos registrados</h5>
+                            <a href="/dentists/create" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus-lg"></i> Nuevo Odontólogo
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Usuario</th>
+                                        <th>Especialidades</th>
+                                        <th>Horario</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Aquí se listarán los odontólogos desde la base de datos -->
+                                    <tr th:each="dentist : ${dentists}" th:if="${dentists != null}">
+                                        <td th:text="${dentist.id}"></td>
+                                        <td th:text="${dentist.name}"></td>
+                                        <td th:text="${dentist.user}"></td>
+                                        <td>
+                                            <span th:if="${dentist.specialties != null && !dentist.specialties.empty}">
+                                                <span th:each="specialty, stat : ${dentist.specialties}">
+                                                    <span th:text="${specialty.name}"></span>
+                                                    <span th:unless="${stat.last}">, </span>
+                                                </span>
+                                            </span>
+                                            <span th:unless="${dentist.specialties != null && !dentist.specialties.empty}">
+                                                Sin especialidades
+                                            </span>
+                                        </td>
+                                        <td th:text="${dentist.schedule != null ? dentist.schedule.description : 'Sin horario'}"></td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="#" class="btn btn-outline-primary" title="Ver">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="#" class="btn btn-outline-secondary" title="Editar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger" title="Eliminar">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <a href="/dentists/create" class="btn btn-success">
-                    <i class="bi bi-person-plus me-2"></i>Nuevo Odontólogo
-                </a>
-            </div>
-            
-            <!-- Tabla de odontólogos -->
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Usuario</th>
-                                <th>Especialidades</th>
-                                <th>Horario</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Ejemplo de fila (en producción esto vendría de la base de datos) -->
-                            <tr>
-                                <td>1</td>
-                                <td>Dr. Juan Martínez</td>
-                                <td>jmartinez</td>
-                                <td>
-                                    <span class="badge bg-primary me-1">Odontología General</span>
-                                    <span class="badge bg-info">Ortodoncia</span>
-                                </td>
-                                <td>Lunes a Viernes, 9-14h</td>
-                                <td>
-                                    <button class="btn btn-sm btn-danger me-1">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-primary me-1">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-info">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>Dra. Lucía González</td>
-                                <td>lgonzalez</td>
-                                <td>
-                                    <span class="badge bg-info me-1">Ortodoncia</span>
-                                    <span class="badge bg-warning">Endodoncia</span>
-                                </td>
-                                <td>Martes y Jueves, 16-20h</td>
-                                <td>
-                                    <button class="btn btn-sm btn-danger me-1">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-primary me-1">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-info">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
     <!-- Navegación móvil -->
     <div th:replace="~{fragments/sidebar :: mobileNav}"></div>
     <script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/scripts/navbar.js}"></script>
 </body>
 </html>
