@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Usuarios</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.1.3/css/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.css}" />
+</head>
+<body>
+<div class="d-flex min-vh-100">
+    <!-- Sidebar a la izquierda -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    
+    <!-- Contenido principal con navbar arriba -->
+    <div class="flex-grow-1 d-flex flex-column">
+        <!-- Navbar superior -->
+        <div th:replace="~{fragments/navbar :: topNav}"></div>
+        
+        <!-- Contenido principal -->
+        <main class="flex-grow-1 p-4">
+            <h1>Clínica Odontológica</h1>
+            <h2>Lista de Usuarios</h2>
+            
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Usuarios registrados</h5>
+                        <a href="/users/create" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Nuevo Usuario
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre Usuario</th>
+                                    <th>Nombre</th>
+                                    <th>Rol</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Los datos se cargarán aquí mediante JavaScript -->
+                                <tr>
+                                    <td colspan="5" class="text-center">Cargando usuarios...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Paginación -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted">
+                            <span id="totalRecords">0</span> usuarios encontrados
+                        </div>
+                        <nav aria-label="Navegación de páginas">
+                            <ul class="pagination" id="pagination">
+                                <!-- Paginación generada por JavaScript -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Navegación móvil -->
+<div th:replace="~{fragments/sidebar :: mobileNav}"></div>
+
+<script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/scripts/navbar.js}"></script>
+
+<!-- Script para la lista de usuarios -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Variables de estado para la paginación
+        let currentPage = 0;
+        const pageSize = 10;
+        let totalPages = 0;
+        
+        // Cargar usuarios cuando la página se carga
+        loadUsers(currentPage, pageSize);
+        
+        function loadUsers(page, size) {
+            // Obtener el token del localStorage
+            const token = localStorage.getItem('authToken');
+            
+            // Elemento de la tabla donde mostraremos los datos
+            const tableBody = document.getElementById('usersTableBody');
+            
+            // Mostrar indicador de carga
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></td></tr>';
+            
+            // Realizar petición AJAX
+            fetch(`/users?index=${page}&size=${size}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': token || '',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la petición');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Actualizar variables de paginación
+                totalPages = data.totalPages;
+                
+                // Limpiar tabla
+                tableBody.innerHTML = '';
+                
+                // Verificar si hay datos
+                if (data.content && data.content.length > 0) {
+                    // Actualizar contador
+                    document.getElementById('totalRecords').textContent = data.totalElements;
+                    
+                    // Renderizar filas de la tabla
+                    data.content.forEach(user => {
+                        const row = document.createElement('tr');
+                        
+                        // Determinar si es Admin o Dentista
+                        const isAdmin = !user.specialties; // Los dentistas tienen especialidades
+                        const role = isAdmin ? 'Admin' : 'Odontólogo';
+                        
+                        // ID (podría no estar disponible para algunos usuarios)
+                        const userId = user.id || '';
+                        
+                        row.innerHTML = `
+                            <td>${userId}</td>
+                            <td>${user.user || ''}</td>
+                            <td>${user.name || ''}</td>
+                            <td><span class="badge ${isAdmin ? 'bg-danger' : 'bg-primary'}">${role}</span></td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="#" class="btn btn-outline-primary" title="Ver">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-outline-secondary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                    
+                    // Generar paginación
+                    renderPagination();
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No se encontraron usuarios</td></tr>';
+                    document.getElementById('totalRecords').textContent = '0';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error al cargar datos: ${error.message}</td></tr>`;
+            });
+        }
+        
+        function renderPagination() {
+            const paginationElement = document.getElementById('pagination');
+            paginationElement.innerHTML = '';
+            
+            // Anterior
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 0 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Anterior"><span aria-hidden="true">&laquo;</span></a>`;
+            prevLi.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage > 0) {
+                    currentPage--;
+                    loadUsers(currentPage, pageSize);
+                }
+            });
+            paginationElement.appendChild(prevLi);
+            
+            // Páginas
+            for (let i = 0; i < totalPages; i++) {
+                const pageLi = document.createElement('li');
+                pageLi.className = `page-item ${currentPage === i ? 'active' : ''}`;
+                pageLi.innerHTML = `<a class="page-link" href="#">${i + 1}</a>`;
+                pageLi.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentPage = i;
+                    loadUsers(currentPage, pageSize);
+                });
+                paginationElement.appendChild(pageLi);
+            }
+            
+            // Siguiente
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Siguiente"><span aria-hidden="true">&raquo;</span></a>`;
+            nextLi.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage < totalPages - 1) {
+                    currentPage++;
+                    loadUsers(currentPage, pageSize);
+                }
+            });
+            paginationElement.appendChild(nextLi);
+        }
+    });
+</script>
+</body>
+</html> 
