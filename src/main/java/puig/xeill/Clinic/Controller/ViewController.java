@@ -20,7 +20,7 @@ public class ViewController {
     }
 
     // Panel de acciones de usuarios
-    @GetMapping("/users")
+    @GetMapping("/users/dashboard")
     public String usersDashboard() {
         return "users/dashboard";
     }
