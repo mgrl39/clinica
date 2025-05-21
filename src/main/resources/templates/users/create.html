@@ -20,13 +20,139 @@
         <main class="flex-grow-1 p-4">
             <h1>Clínica Odontológica</h1>
             <h2 class="mb-3">Alta Usuarios</h2>
-            <p class="text-muted mb-4">Este es el apartado para dar de alta los diferentes usuarios del sistema.</p>
-            <form class="mb-5" style="max-width:700px;" th:action="@{/users/create}" method="post">
-                <input type="text" class="form-control mb-3 rounded-pill" name="username" placeholder="Nombre Usuario" required>
-                <input type="password" class="form-control mb-3 rounded-pill" name="password" placeholder="Contraseña" required>
-                <input type="text" class="form-control mb-4 rounded-pill" name="role" placeholder="Rol" required>
-                <button type="submit" class="btn btn-primary w-100 rounded-pill" style="font-size:1.2rem;">Crear Usuario</button>
-            </form>
+            <p class="text-muted mb-4">Complete el formulario para dar de alta un nuevo usuario en el sistema.</p>
+            
+            <!-- Alertas para resultados -->
+            <div class="alert alert-success alert-dismissible fade show" id="successAlert" style="display: none;" role="alert">
+                <strong><i class="bi bi-check-circle me-2"></i>¡Éxito!</strong> El usuario ha sido registrado correctamente.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <div class="alert alert-danger alert-dismissible fade show" id="errorAlert" style="display: none;" role="alert">
+                <strong><i class="bi bi-exclamation-triangle me-2"></i>Error:</strong> <span id="errorMessage">Hubo un problema al registrar al usuario.</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <div class="card shadow-sm mb-5">
+                <div class="card-body">
+                    <form id="userForm" class="row g-3">
+                        <!-- Tipo de usuario -->
+                        <div class="col-md-12 mb-3">
+                            <label for="userType" class="form-label">Tipo de Usuario</label>
+                            <select class="form-select" id="userType" required>
+                                <option value="" selected disabled>Seleccione un tipo de usuario</option>
+                                <option value="admin">Administrador</option>
+                                <option value="dentist">Médico Odontólogo</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Campos comunes -->
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Nombre completo</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="user" class="form-label">Nombre de usuario</label>
+                            <input type="text" class="form-control" id="user" name="user" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="passwordConfirm" class="form-label">Confirmar contraseña</label>
+                            <input type="password" class="form-control" id="passwordConfirm" name="passwordConfirm" required>
+                            <div class="invalid-feedback" id="passwordMismatch">
+                                Las contraseñas no coinciden
+                            </div>
+                        </div>
+                        
+                        <!-- Campos específicos para odontólogos (inicialmente ocultos) -->
+                        <div id="dentistFields" style="display: none;">
+                            <!-- Especialidades -->
+                            <div class="col-12">
+                                <label class="form-label">Especialidades</label>
+                                <div class="row">
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input specialty-checkbox" type="checkbox" value="1" id="spec1" name="specialties">
+                                            <label class="form-check-label" for="spec1">Odontología General</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input specialty-checkbox" type="checkbox" value="2" id="spec2" name="specialties">
+                                            <label class="form-check-label" for="spec2">Ortodoncia</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input specialty-checkbox" type="checkbox" value="3" id="spec3" name="specialties">
+                                            <label class="form-check-label" for="spec3">Endodoncia</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input specialty-checkbox" type="checkbox" value="4" id="spec4" name="specialties">
+                                            <label class="form-check-label" for="spec4">Periodoncia</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input specialty-checkbox" type="checkbox" value="5" id="spec5" name="specialties">
+                                            <label class="form-check-label" for="spec5">Odontopediatría</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input specialty-checkbox" type="checkbox" value="6" id="spec6" name="specialties">
+                                            <label class="form-check-label" for="spec6">Cirugía Oral</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input specialty-checkbox" type="checkbox" value="7" id="spec7" name="specialties">
+                                            <label class="form-check-label" for="spec7">Implantología</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input specialty-checkbox" type="checkbox" value="8" id="spec8" name="specialties">
+                                            <label class="form-check-label" for="spec8">Estética Dental</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback" id="specialtiesError">
+                                    Seleccione al menos una especialidad
+                                </div>
+                            </div>
+                            
+                            <!-- Horario -->
+                            <div class="col-md-6 mt-3">
+                                <label for="idSchedule" class="form-label">Horario</label>
+                                <select class="form-select" id="idSchedule" name="idSchedule">
+                                    <option value="">Seleccione un horario</option>
+                                    <option value="1">Mañanas (9:00 - 14:00)</option>
+                                    <option value="2">Tardes (16:00 - 20:00)</option>
+                                    <option value="3">Jornada completa (9:00 - 18:00)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mt-4">
+                            <button type="submit" id="submitButton" class="btn btn-primary px-4 me-2">
+                                <i class="bi bi-save me-2"></i>Guardar
+                            </button>
+                            <a href="/users/list" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </main>
     </div>
 </div>
@@ -36,5 +162,160 @@
 
 <script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/scripts/navbar.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('userForm');
+        const userType = document.getElementById('userType');
+        const dentistFields = document.getElementById('dentistFields');
+        const password = document.getElementById('password');
+        const passwordConfirm = document.getElementById('passwordConfirm');
+        const passwordMismatch = document.getElementById('passwordMismatch');
+        const specialtyCheckboxes = document.querySelectorAll('.specialty-checkbox');
+        const specialtiesError = document.getElementById('specialtiesError');
+        const successAlert = document.getElementById('successAlert');
+        const errorAlert = document.getElementById('errorAlert');
+        const errorMessage = document.getElementById('errorMessage');
+        const submitButton = document.getElementById('submitButton');
+        
+        // Mostrar/ocultar campos según el tipo de usuario
+        userType.addEventListener('change', function() {
+            if (this.value === 'dentist') {
+                dentistFields.style.display = 'block';
+                // Hacer que los campos de odontólogo sean requeridos
+                document.getElementById('idSchedule').setAttribute('required', 'required');
+            } else {
+                dentistFields.style.display = 'none';
+                // Quitar el atributo required de los campos de odontólogo
+                document.getElementById('idSchedule').removeAttribute('required');
+            }
+        });
+        
+        // Validar coincidencia de contraseñas
+        passwordConfirm.addEventListener('input', function() {
+            if(password.value !== passwordConfirm.value) {
+                passwordConfirm.classList.add('is-invalid');
+                passwordMismatch.style.display = 'block';
+            } else {
+                passwordConfirm.classList.remove('is-invalid');
+                passwordMismatch.style.display = 'none';
+            }
+        });
+        
+        // Manejar envío del formulario
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Restablecer mensajes de error
+            form.classList.remove('was-validated');
+            errorAlert.style.display = 'none';
+            successAlert.style.display = 'none';
+            
+            // Validar formulario manualmente
+            let isValid = true;
+            
+            // Validar que las contraseñas coincidan
+            if(password.value !== passwordConfirm.value) {
+                passwordConfirm.classList.add('is-invalid');
+                passwordMismatch.style.display = 'block';
+                isValid = false;
+            }
+            
+            // Si es odontólogo, validar especialidades
+            if(userType.value === 'dentist') {
+                let hasSpecialty = false;
+                specialtyCheckboxes.forEach(checkbox => {
+                    if(checkbox.checked) {
+                        hasSpecialty = true;
+                    }
+                });
+                
+                if(!hasSpecialty) {
+                    specialtiesError.style.display = 'block';
+                    isValid = false;
+                } else {
+                    specialtiesError.style.display = 'none';
+                }
+            }
+            
+            // Si no es válido, detener envío
+            if(!isValid) {
+                return;
+            }
+            
+            // Desactivar botón y mostrar cargando
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Guardando...';
+            
+            // Preparar datos para enviar según el tipo de usuario
+            let userData = {
+                name: document.getElementById('name').value,
+                user: document.getElementById('user').value,
+                password: document.getElementById('password').value
+            };
+            
+            // Añadir campos específicos para odontólogos
+            if(userType.value === 'dentist') {
+                const selectedSpecialties = [];
+                specialtyCheckboxes.forEach(checkbox => {
+                    if(checkbox.checked) {
+                        selectedSpecialties.push(parseInt(checkbox.value));
+                    }
+                });
+                
+                userData.idSchedule = parseInt(document.getElementById('idSchedule').value);
+                userData.specialties = selectedSpecialties;
+            }
+            
+            // Token de autenticación (si existe)
+            const token = localStorage.getItem('authToken') || '';
+            
+            // Determinar el endpoint según el tipo de usuario
+            const endpoint = userType.value === 'dentist' ? '/dentists/create' : '/admin/create';
+            
+            // Enviar datos al servidor
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en el servidor. Por favor, inténtelo de nuevo.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Mostrar mensaje de éxito
+                successAlert.style.display = 'block';
+                
+                // Resetear formulario
+                form.reset();
+                dentistFields.style.display = 'none';
+                
+                // Habilitar botón
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="bi bi-save me-2"></i>Guardar';
+                
+                // Opcionalmente, redirigir a la lista después de un tiempo
+                setTimeout(() => {
+                    window.location.href = '/users/list';
+                }, 2000);
+            })
+            .catch(error => {
+                // Mostrar mensaje de error
+                errorMessage.textContent = error.message || 'Error al registrar el usuario';
+                errorAlert.style.display = 'block';
+                
+                // Habilitar botón
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="bi bi-save me-2"></i>Guardar';
+            });
+        });
+    });
+</script>
 </body>
 </html> 
