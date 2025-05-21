@@ -2,9 +2,8 @@ name: JavaDoc
 
 on:
   push:
-    branches: [ '**' ]  # O la rama que estés usando como principal
+    branches: [ '**' ]
 
-# Añadir sección de permisos
 permissions:
   contents: write
 
