@@ -62,8 +62,11 @@ public class DentistController {
             dentistDTO.getSpecialties().forEach(specialtyID -> {
                 Optional<Specialty> specialtyOptional = specialtyRepository.findById(specialtyID);
 
-                Specialty specialty = specialtyOptional.get();
-                specialties.add(specialty);
+                if(specialtyOptional.isPresent()){
+                    Specialty specialty = specialtyOptional.get();
+                    specialties.add(specialty);
+                }
+
 
             });
 
