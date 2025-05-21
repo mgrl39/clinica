@@ -1,0 +1,30 @@
+name: JavaDoc
+
+on:
+  push:
+    branches: [ '**' ]  # Ajusta según tu rama principal (main o master)
+
+jobs:
+  generate-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código fuente
+        uses: actions/checkout@v3
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'  # Actualizado a Java 21 para coincidir con pom.xml
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Generar JavaDoc con Maven
+        run: mvn javadoc:javadoc
+
+      - name: Publicar JavaDoc en GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: target/site/apidocs  # Carpeta donde Maven guarda el JavaDoc
+          branch: gh-pages
+          clean: true  # Borra archivos antiguos
+          single-commit: true  # Mantiene solo un commit en la historia de gh-pages
