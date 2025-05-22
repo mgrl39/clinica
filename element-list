@@ -1,0 +1,9 @@
+puig.xeill.Clinic
+puig.xeill.Clinic.Controller
+puig.xeill.Clinic.Model
+puig.xeill.Clinic.Model.DTO
+puig.xeill.Clinic.Model.Enums
+puig.xeill.Clinic.Model.Persons
+puig.xeill.Clinic.Model.Request
+puig.xeill.Clinic.Repository
+puig.xeill.Clinic.Security
