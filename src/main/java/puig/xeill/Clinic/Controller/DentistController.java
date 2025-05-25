@@ -1,6 +1,10 @@
 package puig.xeill.Clinic.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import puig.xeill.Clinic.Model.DTO.DentistDTO;
@@ -51,6 +55,35 @@ public class DentistController {
             return token;
         }
         return null;
+    }
+    @GetMapping("")
+    public Page<DentistDTO> getDentist (@RequestParam int page) {
+        List<Dentist> dentistList  = dentistRepository.findAll();
+        List<DentistDTO> dentistDTOList = new ArrayList<>();
+
+        dentistList.forEach(dentist -> {
+            DentistDTO dentistDTO = new DentistDTO();
+            dentistDTO.setUser(dentist.getUser());
+            dentistDTO.setName(dentist.getName());
+            dentistDTO.setIdSchedule(dentist.getIdSchedule());
+            List specialtyLongList = new ArrayList<>();
+            dentist.getSpecialties().forEach(specialty -> {
+                //SpecialtyDTO specialtyDTO = new SpecialtyDTO(specialty.getId(), specialty.getName());
+                specialtyLongList.add(specialty.getId());
+            });
+            dentistDTO.setSpecialties(specialtyLongList);
+            dentistDTOList.add(dentistDTO);
+        });
+        Pageable pageable = PageRequest.of(page, 10);
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), dentistDTOList.size());
+
+        List<DentistDTO> filterList = dentistDTOList.subList(start, end);
+
+        Page<DentistDTO> pagedResult = new PageImpl<>(filterList, pageable, dentistDTOList.size());
+
+        return  pagedResult;
+        //return dentistRepository.findAll(Pageable.ofSize(10).withPage(page));
     }
 
     @PostMapping("/create")

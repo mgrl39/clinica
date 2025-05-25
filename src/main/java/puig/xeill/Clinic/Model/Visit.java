@@ -6,7 +6,7 @@ import puig.xeill.Clinic.Model.Enums.VisitReason;
 import puig.xeill.Clinic.Model.Persons.Dentist;
 import puig.xeill.Clinic.Model.Persons.Patient;
 
-import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 
 @Entity
@@ -33,5 +33,5 @@ public class Visit {
     @JoinColumn(name = "id_dentist")
     private Dentist idDentist;
 
-    private LocalDate time;
+    private LocalTime time;
 }

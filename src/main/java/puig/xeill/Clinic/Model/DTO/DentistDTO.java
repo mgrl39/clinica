@@ -18,4 +18,5 @@ public class DentistDTO {
     private String password;
     private String name;
     private List<Long> specialties;
+
 }

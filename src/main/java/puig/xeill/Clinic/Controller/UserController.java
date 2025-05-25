@@ -32,7 +32,7 @@ public class UserController {
     SpecialtyRepository specialtyRepository;
 
     @GetMapping("")
-    public Page<Object> get(@RequestParam int index, @RequestParam int size) {
+    public Page<Object> get(@RequestParam int page, @RequestParam int size) {
         List<Dentist> dentistList = dentistRepository.findAll();
         List<DentistDTO> dentistDTOList = new ArrayList<>();
 
@@ -59,7 +59,7 @@ public class UserController {
         combinedList.addAll(dentistDTOList);
         combinedList.addAll(adminList);
 
-        Pageable pageable = PageRequest.of(index, size);
+        Pageable pageable = PageRequest.of(page, size);
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), combinedList.size());
         List<Object> filterList = combinedList.subList(start, end);

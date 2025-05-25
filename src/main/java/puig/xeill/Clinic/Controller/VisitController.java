@@ -68,8 +68,8 @@ public class VisitController {
             System.out.println("-----------------");
             System.out.println(visitRequest.getDate());
             visit.setReason(visitRequest.getReason());
-            visit.setComment(visit.getComment());
-            visit.setTime(visit.getTime());
+            visit.setComment(visitRequest.getComment());
+            visit.setTime(visitRequest.getTime());
         }
         System.out.println(visit.toString());
         visitRepository.save(visit);
