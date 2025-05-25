@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<body>
+    <!-- Navbar superior con información de usuario -->
+    <nav th:fragment="topNav" class="navbar navbar-expand navbar-light bg-white shadow-sm py-2">
+        <div class="container-fluid">
+            <!-- Título de la sección (opcional) -->
+            <h4 class="mb-0 text-muted d-none d-md-block">Panel de Control</h4>
+            
+            <!-- Espacio flexible -->
+            <div class="flex-grow-1"></div>
+            
+            <!-- Información del usuario -->
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle text-secondary" href="#" role="button" id="userDropdown" 
+                   data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="me-2" id="username">Usuario</span>
+                    <img class="img-profile rounded-circle" width="32" height="32" 
+                         th:src="@{/assets/profile-placeholder.png}" alt="Profile">
+                </a>
+                <!-- Menú dropdown -->
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-person-fill me-2"></i>Perfil</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#" id="logoutBtn">
+                        <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</body>
+</html> 

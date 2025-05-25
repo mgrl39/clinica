@@ -19,4 +19,53 @@ public class ViewController {
         return "home";
     }
 
+    // Panel de acciones de usuarios
+    @GetMapping("/users/dashboard")
+    public String usersDashboard() {
+        return "users/dashboard";
+    }
+
+    // Listado de usuarios
+    @GetMapping("/users/list")
+    public String usersList() {
+        return "users/list";
+    }
+
+    // Alta de usuarios
+    @GetMapping("/users/create")
+    public String usersCreate() {
+        return "users/create";
+    }
+
+    // ODONTÓLOGOS (nuevas rutas)
+    @GetMapping("/dentists")
+    public String dentistsDashboard() {
+        return "dentists/dashboard";
+    }
+
+    @GetMapping("/dentists/list")
+    public String dentistsList() {
+        return "dentists/list";
+    }
+
+    @GetMapping("/dentists/create")
+    public String dentistsCreate() {
+        return "dentists/create";
+    }
+
+    // PACIENTES (nuevas rutas)
+    @GetMapping("/patients")
+    public String patientsDashboard() {
+        return "patients/dashboard";
+    }
+
+    @GetMapping("/patients/list")
+    public String patientsList() {
+        return "patients/list";
+    }
+
+    @GetMapping("/patients/create")
+    public String patientsCreate() {
+        return "patients/create";
+    }
 }
