@@ -73,4 +73,15 @@ public class ViewController {
     public String patientsCreate() {
         return "patients/create";
     }
+
+    // VISITAS (nuevas rutas)
+    @GetMapping("/visits/list")
+    public String visitsList() {
+        return "visits/list";
+    }
+
+    @GetMapping("/visits/dashboard")
+    public String visitsDashboard() {
+        return "visits/dashboard";
+    }
 }

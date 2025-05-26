@@ -1,6 +1,9 @@
 package puig.xeill.Clinic.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import puig.xeill.Clinic.Model.DTO.VisitDTO;
@@ -20,6 +23,7 @@ import puig.xeill.Clinic.Security.Security;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("visits")
@@ -40,28 +44,69 @@ public class VisitController {
     private VisitRepository visitRepository;
 
     @GetMapping("/get")
-    public List<VisitDTO> getVisits(@RequestHeader String token) throws Exception {
-        String username = jwtUtil.getNameFromToken(token);
-        Optional<Dentist> dentistOptional = dentistRepository.findByUser(username);
-        if (dentistOptional.isEmpty()) {
-            throw new Exception("Dentist not found");
+    public ResponseEntity<?> getVisits(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestHeader String token) {
+        
+        Map<String, Object> response = new HashMap<>();
+        try {
+            String username = jwtUtil.getNameFromToken(token);
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Visit> visitsPage = visitRepository.findAll(pageable);
+            
+            List<Map<String, Object>> visitsDTO = new ArrayList<>();
+            
+            for (Visit visit : visitsPage.getContent()) {
+                try {
+                    Map<String, Object> visitMap = new HashMap<>();
+                    visitMap.put("id", visit.getId());
+                    visitMap.put("date", visit.getDate());
+                    visitMap.put("time", visit.getTime());
+                    visitMap.put("reason", visit.getReason());
+                    
+                    // Información del paciente
+                    Patient patient = visit.getIdPatient();
+                    if (patient != null) {
+                        try {
+                            visitMap.put("patientName", Security.decrypt(patient.getName()));
+                            visitMap.put("patientDni", Security.decrypt(patient.getDni()));
+                        } catch (Exception e) {
+                            visitMap.put("patientName", "Error al desencriptar");
+                            visitMap.put("patientDni", "Error al desencriptar");
+                        }
+                    }
+                    
+                    // Información del dentista
+                    Dentist dentist = visit.getIdDentist();
+                    if (dentist != null) {
+                        try {
+                            visitMap.put("dentistName", Security.decrypt(dentist.getName()));
+                            visitMap.put("dentistId", dentist.getId());
+                        } catch (Exception e) {
+                            visitMap.put("dentistName", "Error al desencriptar");
+                        }
+                    }
+                    
+                    visitsDTO.add(visitMap);
+                } catch (Exception e) {
+                    // Si hay error con una visita específica, la saltamos
+                    continue;
+                }
+            }
+
+            response.put("content", visitsDTO);
+            response.put("currentPage", visitsPage.getNumber());
+            response.put("totalItems", visitsPage.getTotalElements());
+            response.put("totalPages", visitsPage.getTotalPages());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error al obtener las visitas: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
-        Dentist dentist = dentistOptional.get();
-
-        List<Visit> visits = visitRepository.findByIdDentist(dentist);
-
-        List<VisitDTO> visitDTOList = visits.stream().map(visit -> {
-            VisitDTO visitDTO = new VisitDTO();
-            visitDTO.setId(visit.getId());
-            visitDTO.setReason(visit.getReason().toString());
-            visitDTO.setComment(visit.getComment());
-            visitDTO.setDate(visit.getDate());
-            visitDTO.setIdPatient(visit.getIdPatient().getId());
-            visitDTO.setIdDentist(visit.getIdDentist().getId());
-            return visitDTO;
-        }).toList();
-
-        return visitDTOList;
     }
 
     public String edit(@RequestBody Visit visit) {
