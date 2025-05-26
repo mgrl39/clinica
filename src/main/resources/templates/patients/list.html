@@ -130,8 +130,12 @@
                     ...options,
                     headers: {
                         ...options.headers,
-                        'Authorization': `Bearer ${authToken}`
-                    }
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'include'
                 });
             };
 
@@ -177,9 +181,15 @@
         function loadPatients(page) {
             if (window.isSearching) return;
 
-            fetchWithAuth(`http://localhost:8080/patients/get?page=${page}`)
+            fetchWithAuth(`/patients/get?page=${page}`)
                 .then(response => {
-                    if (!response.ok) throw new Error('Error al obtener los pacientes');
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) {
+                            window.location.href = '/login';
+                            return;
+                        }
+                        throw new Error('Error al obtener los pacientes');
+                    }
                     return response.json();
                 })
                 .then(data => {
@@ -188,10 +198,6 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    if (error.message.includes('401') || error.message.includes('403')) {
-                        window.location.href = '/login';
-                        return;
-                    }
                     const tbody = document.querySelector('tbody');
                     tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error: ${error.message}</td></tr>`;
                 });
@@ -288,13 +294,13 @@
 
         async function loadAllPages() {
             try {
-                const firstPageData = await fetchWithAuth('http://localhost:8080/patients/get?page=0').then(r => r.json());
+                const firstPageData = await fetchWithAuth('/patients/get?page=0').then(r => r.json());
                 window.totalPagesCount = firstPageData.totalPages;
                 window.allPatients = [...firstPageData.content];
 
                 const remainingPages = Array.from({length: firstPageData.totalPages - 1}, (_, i) => i + 1);
                 const promises = remainingPages.map(page => 
-                    fetchWithAuth(`http://localhost:8080/patients/get?page=${page}`)
+                    fetchWithAuth(`/patients/get?page=${page}`)
                         .then(r => r.json())
                         .then(data => window.allPatients.push(...data.content))
                 );
