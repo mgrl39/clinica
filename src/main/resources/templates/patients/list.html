@@ -295,10 +295,13 @@
                 });
             });
 
-            // Inicializar el modal correctamente
+            // Inicializar los modales correctamente
             window.visitModal = new bootstrap.Modal(document.getElementById('scheduleVisitModal'));
             window.editModal = new bootstrap.Modal(document.getElementById('editPatientModal'));
-
+            
+            // Añadir el evento para guardar cambios del paciente
+            document.getElementById('saveEditPatient').addEventListener('click', saveEditPatient);
+            
             // Configurar eventos
             document.getElementById('dentistSelect').addEventListener('change', updateDateTimeInput);
             document.getElementById('saveVisit').addEventListener('click', createVisit);
@@ -364,12 +367,18 @@
                             </span>
                         </td>
                         <td>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-primary" onclick="scheduleVisit('${patient.dni}', '${patient.name}')" title="Agendar Cita">
+                            <div class="btn-group btn-group-sm">
+                                <a href="/patients/show/${patient.id}" class="btn btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Ver
+                                </a>
+                                <button class="btn btn-outline-secondary" onclick="editPatient(${patient.id})">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="scheduleVisit('${patient.dni}', '${patient.name}')">
                                     <i class="bi bi-calendar-plus"></i> Cita
                                 </button>
-                                <button class="btn btn-sm btn-secondary" onclick="editPatient(${patient.id})" title="Editar">
-                                    <i class="bi bi-pencil"></i> Editar
+                                <button class="btn btn-outline-danger" onclick="deletePatient(${patient.id})">
+                                    <i class="bi bi-trash"></i> Eliminar
                                 </button>
                             </div>
                         </td>
@@ -655,10 +664,9 @@
             }
         }
 
-        let editModal;
         async function editPatient(id) {
             try {
-                const response = await fetchWithAuth(`/patients/${id}`);
+                const response = await fetchWithAuth(`/patients/show/${id}`);
                 if (!response.ok) throw new Error('Error al obtener datos del paciente');
                 
                 const patient = await response.json();
@@ -670,33 +678,42 @@
                 document.getElementById('editType').value = patient.type;
                 document.getElementById('editBloodType').value = patient.bloodType;
                 
-                editModal.show();
+                // Usar la variable global del modal
+                window.editModal.show();
             } catch (error) {
+                console.error('Error:', error);
                 alert('Error al cargar datos del paciente: ' + error.message);
             }
         }
 
         async function saveEditPatient() {
-            const patientData = {
-                id: document.getElementById('editPatientId').value,
-                name: document.getElementById('editName').value,
-                dni: document.getElementById('editDni').value,
-                type: document.getElementById('editType').value,
-                bloodType: document.getElementById('editBloodType').value
-            };
-
             try {
-                const response = await fetchWithAuth(`/patients/update`, {
+                const patientData = {
+                    id: document.getElementById('editPatientId').value,
+                    name: document.getElementById('editName').value,
+                    dni: document.getElementById('editDni').value,
+                    type: document.getElementById('editType').value,
+                    bloodType: document.getElementById('editBloodType').value
+                };
+
+                console.log('Enviando datos:', patientData); // Para debug
+
+                const response = await fetchWithAuth('/patients/update', {
                     method: 'POST',
                     body: JSON.stringify(patientData)
                 });
 
-                if (!response.ok) throw new Error('Error al actualizar paciente');
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    throw new Error(errorData?.message || 'Error al actualizar paciente');
+                }
 
-                editModal.hide();
+                const updatedPatient = await response.json();
+                window.editModal.hide();
                 showSuccessAlert('Paciente actualizado correctamente');
                 loadPatients(0); // Recargar la lista
             } catch (error) {
+                console.error('Error:', error);
                 alert('Error al guardar cambios: ' + error.message);
             }
         }
@@ -712,14 +729,6 @@
             document.body.appendChild(alert);
             setTimeout(() => alert.remove(), 3000);
         }
-
-        // Eventos
-        document.addEventListener('DOMContentLoaded', function() {
-            // ... código existente ...
-            
-            // Configurar el evento click del botón guardar
-            document.getElementById('saveVisit').addEventListener('click', createVisit);
-        });
     </script>
 </body>
 </html>

@@ -19,6 +19,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -102,33 +103,42 @@ public class PatientController {
     }
 
     @PostMapping("/update")
-    public Patient edit(@RequestBody Patient patient, @RequestHeader String token) throws Exception {
-
-        String name = jwtUtil.getNameFromToken(token);
-        Optional<Admin> adminOptional = adminRepository.findByUser(name);
-
-        if (adminOptional.isPresent()){
-            Optional<Patient> patientOptional = patientRepository.findByDni(Security.decrypt(patient.getDni()));
-            if (patientOptional.isPresent()) {
-
-                Patient existingPatient = patientOptional.get();
-
-                Period edad = Period.between(existingPatient.getBornDate(), LocalDate.now());
-
-                if(edad.getYears() >= 18) {
-                    existingPatient.setTutor(null);
-                } else {
-                    existingPatient.setTutor(Security.encrypt(patient.getTutor()));
-                }
-
+    public Patient edit(@RequestBody Patient patient) throws Exception {
+        try {
+            // Buscar el paciente existente por ID
+            Optional<Patient> existingPatientOpt = patientRepository.findById(patient.getId());
+            
+            if (existingPatientOpt.isPresent()) {
+                Patient existingPatient = existingPatientOpt.get();
+                
+                // Actualizar los campos básicos sin encriptar primero
+                existingPatient.setType(patient.getType());
+                existingPatient.setBloodType(patient.getBloodType());
+                
+                // Encriptar los campos sensibles
                 existingPatient.setName(Security.encrypt(patient.getName()));
-
-                patientRepository.save(existingPatient);
-
-                return existingPatient;
+                existingPatient.setDni(Security.encrypt(patient.getDni()));
+                
+                // Guardar los cambios
+                Patient updatedPatient = patientRepository.save(existingPatient);
+                
+                // Crear objeto de respuesta con datos desencriptados
+                Patient responsePatient = new Patient();
+                responsePatient.setId(updatedPatient.getId());
+                responsePatient.setName(Security.decrypt(updatedPatient.getName()));
+                responsePatient.setDni(Security.decrypt(updatedPatient.getDni()));
+                responsePatient.setType(updatedPatient.getType());
+                responsePatient.setBloodType(updatedPatient.getBloodType());
+                responsePatient.setBornDate(updatedPatient.getBornDate());
+                
+                return responsePatient;
             }
+            
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("Error al actualizar el paciente: " + e.getMessage());
         }
-        return null;
     }
 
 
