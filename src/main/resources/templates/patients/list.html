@@ -368,16 +368,13 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="/patients/show/${patient.id}" class="btn btn-outline-primary">
-                                    <i class="bi bi-eye"></i> Ver
-                                </a>
                                 <button class="btn btn-outline-secondary" onclick="editPatient(${patient.id})">
                                     <i class="bi bi-pencil"></i> Editar
                                 </button>
                                 <button class="btn btn-outline-primary" onclick="scheduleVisit('${patient.dni}', '${patient.name}')">
                                     <i class="bi bi-calendar-plus"></i> Cita
                                 </button>
-                                <button class="btn btn-outline-danger" onclick="deletePatient(${patient.id})">
+                                <button class="btn btn-outline-danger" onclick="deletePatient(${patient.id}, '${patient.name}')">
                                     <i class="bi bi-trash"></i> Eliminar
                                 </button>
                             </div>
@@ -502,9 +499,23 @@
             loadPatients(0);
         }
 
-        function deletePatient(id) {
-            if (confirm('¿Estás seguro de que deseas eliminar este paciente?')) {
-                console.log('Eliminar paciente:', id);
+        async function deletePatient(id, name) {
+            if (confirm(`¿Estás seguro de que deseas eliminar al paciente ${name}?`)) {
+                try {
+                    const response = await fetchWithAuth(`/patients/delete/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Error al eliminar el paciente');
+                    }
+
+                    showSuccessAlert('Paciente eliminado correctamente');
+                    loadPatients(0); // Recargar la lista
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error al eliminar el paciente: ' + error.message);
+                }
             }
         }
 

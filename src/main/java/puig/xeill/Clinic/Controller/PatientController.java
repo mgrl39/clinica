@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import puig.xeill.Clinic.Model.DTO.DentistDTO;
 import puig.xeill.Clinic.Model.Persons.Admin;
@@ -141,5 +142,18 @@ public class PatientController {
         }
     }
 
-
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            Optional<Patient> patient = patientRepository.findById(id);
+            if (patient.isPresent()) {
+                patientRepository.deleteById(id);
+                return ResponseEntity.ok().build();
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Error al eliminar el paciente: " + e.getMessage());
+        }
+    }
 }
