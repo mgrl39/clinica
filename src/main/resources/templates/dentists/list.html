@@ -10,9 +10,6 @@
         if (!localStorage.getItem('authToken')) {
             window.location.href = '/login';
         }
-        if (localStorage.getItem('userRole') === 'dentist') {
-            window.location.href = '/error.html';
-        }
     </script>
 </head>
 <body>
@@ -45,7 +42,6 @@
                                 <table class="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th>ID</th>
                                             <th>Nombre</th>
                                             <th>Usuario</th>
                                             <th>Especialidades</th>
@@ -196,20 +192,32 @@
         const userRole = localStorage.getItem('userRole');
 
         if (!authToken) return window.location.href = '/login';
-        if (userRole === 'dentist') return window.location.href = '/error.html';
+
+        // Ocultar el botón de nuevo odontólogo si el usuario es dentista
+        if (userRole === 'dentist') {
+            const newDentistBtn = document.querySelector('.card-header .btn-primary');
+            if (newDentistBtn) {
+                newDentistBtn.style.display = 'none';
+            }
+        }
 
         document.getElementById('app').style.display = 'block';
 
         window.fetchWithAuth = (url, options = {}) => {
-            const fullUrl = url.startsWith('http') ? url : 'http://10.2.41.211:8080' + url;
+            const authToken = localStorage.getItem('authToken');
+            const fullUrl = url.startsWith('http') ? url : window.location.origin + url;
+            
             return fetch(fullUrl, {
                 ...options,
                 headers: {
                     ...options.headers,
                     'Authorization': `Bearer ${authToken}`,
+                    'token': authToken,
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
-                }
+                },
+                mode: 'cors',
+                credentials: 'include'
             });
         };
 
@@ -278,7 +286,7 @@
             })
             .catch(error => {
                 console.error('Error al cargar:', error);
-                document.querySelector('tbody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error: ${error.message}</td></tr>`;
+                document.querySelector('tbody').innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error: ${error.message}</td></tr>`;
             });
     }
 
@@ -293,6 +301,7 @@
     function updateTable(dentists) {
         const tbody = document.querySelector('tbody');
         tbody.innerHTML = '';
+        const isAdmin = localStorage.getItem('userRole') === 'admin';
 
         dentists.forEach(dentist => {
             const specialtiesText = Array.isArray(dentist.specialties)
@@ -301,7 +310,6 @@
 
             const row = `
                 <tr>
-                    <td>${dentist.idSchedule || ''}</td>
                     <td>${dentist.name || ''}</td>
                     <td>${dentist.user || ''}</td>
                     <td>${specialtiesText}</td>
@@ -311,17 +319,11 @@
                         </button>
                     </td>
                     <td>
-                        <div class="btn-group btn-group-sm">
-                            <a href="/dentists/${dentist.idSchedule}" class="btn btn-outline-primary">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="/dentists/${dentist.idSchedule}/edit" class="btn btn-outline-secondary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <button class="btn btn-outline-danger" onclick="deleteDentist(${dentist.idSchedule})">
-                                <i class="bi bi-trash"></i>
+                        ${isAdmin ? `
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteDentist(${dentist.idSchedule}, '${dentist.name}')">
+                                <i class="bi bi-trash"></i> Eliminar
                             </button>
-                        </div>
+                        ` : ''}
                     </td>
                 </tr>
             `;
@@ -329,7 +331,7 @@
         });
 
         if (dentists.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No se encontraron dentistas</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No se encontraron dentistas</td></tr>';
         }
     }
 
@@ -367,11 +369,36 @@
         info.textContent = `Mostrando página ${data.number + 1} de ${data.totalPages} (Total: ${data.totalElements} dentistas)`;
     }
 
-    function deleteDentist(id) {
-        if (confirm('¿Seguro que deseas eliminar este odontólogo?')) {
-            console.log('Eliminar odontólogo con ID:', id);
-            // Aquí puedes hacer la petición DELETE si lo necesitas
+    async function deleteDentist(id, name) {
+        if (confirm(`¿Seguro que deseas eliminar al odontólogo ${name}?`)) {
+            try {
+                const response = await fetch(`/dentists/delete/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al eliminar el odontólogo');
+                }
+
+                showSuccessAlert('Odontólogo eliminado correctamente');
+                loadDentists(0); // Recargar la lista
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al eliminar el odontólogo');
+            }
         }
+    }
+
+    // Añadir función helper para mostrar alertas si no existe
+    function showSuccessAlert(message) {
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+        alert.innerHTML = `
+            <i class="bi bi-check-circle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alert);
+        setTimeout(() => alert.remove(), 3000);
     }
 
     // Añadir las funciones para manejar los horarios
