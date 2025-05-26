@@ -1,7 +1,7 @@
 curl -X POST http://10.2.41.211:8080/admins/register \
 -H "Content-Type: application/json" \
 -d '{
-    "user": "admin2",
-    "password": "admin2",
+    "user": "admin3",
+    "password": "admin3",
     "name": "Administrador 2"
 }'
