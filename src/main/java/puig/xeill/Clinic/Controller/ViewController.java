@@ -9,6 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Controller
 public class ViewController {
 
+    @GetMapping("/")
+    public String root() {
+        return "check-auth";  // Esto buscará check-auth.html en templates/
+    }
+
     @GetMapping("/login")
     public String login(){
         return "login";
