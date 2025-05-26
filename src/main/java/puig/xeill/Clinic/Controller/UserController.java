@@ -12,6 +12,7 @@ import puig.xeill.Clinic.Repository.DentistRepository;
 import puig.xeill.Clinic.Repository.SpecialtyRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import puig.xeill.Clinic.Security.Security;
 
 import java.util.*;
 
@@ -39,7 +40,11 @@ public class UserController {
         dentistList.forEach(dentist -> {
             DentistDTO dentistDTO = new DentistDTO();
             dentistDTO.setUser(dentist.getUser());
-            dentistDTO.setName(dentist.getName());
+            try {
+                dentistDTO.setName(Security.decrypt(dentist.getName()));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             dentistDTO.setIdSchedule(dentist.getIdSchedule());
             List specialtyLongList = new ArrayList<>();
             dentist.getSpecialties().forEach(specialty -> {
@@ -51,6 +56,14 @@ public class UserController {
         });
 
         List<Admin> adminList = adminRepository.findAll();
+
+        adminList.forEach(admin -> {
+            try {
+                admin.setName(Security.decrypt(admin.getName()));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         List<Object> combinedList = new ArrayList<>();
         System.out.println(adminList.toString());

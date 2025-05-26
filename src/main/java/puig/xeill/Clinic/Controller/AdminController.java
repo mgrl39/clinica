@@ -13,6 +13,7 @@ import puig.xeill.Clinic.Repository.DentistRepository;
 import puig.xeill.Clinic.Repository.PatientRepository;
 import puig.xeill.Clinic.Repository.ScheduleRepository;
 import puig.xeill.Clinic.Security.JwtUtil;
+import puig.xeill.Clinic.Security.Security;
 
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -49,12 +50,12 @@ public class AdminController {
     }
 
     @PostMapping("/register")
-    public Admin register(@RequestBody Admin admin){
+    public Admin register(@RequestBody Admin admin) throws Exception {
 
         Optional<Admin> adminOptional = adminRepository.findByUser(admin.getUser());
         if(!adminOptional.isPresent()){
-            admin.setName(passwordEncoder.encode(admin.getName()));
-            admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+            admin.setName(Security.encrypt(admin.getName()));
+            admin.setPassword(Security.encrypt(admin.getPassword()));
             adminRepository.save(admin);
         }
         return null;
