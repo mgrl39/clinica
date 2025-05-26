@@ -45,7 +45,7 @@ public class PatientController {
     }
 
     @PostMapping("/create")
-    public Patient show(@RequestBody Patient patient) {
+    public Patient create(@RequestBody Patient patient) {
         patient.setName(passwordEncoder.encode(patient.getName()));
         patient.setDni(passwordEncoder.encode(patient.getDni()));
         patientRepository.save(patient);
