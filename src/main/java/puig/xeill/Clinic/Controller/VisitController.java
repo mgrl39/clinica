@@ -10,6 +10,7 @@ import puig.xeill.Clinic.Repository.DentistRepository;
 import puig.xeill.Clinic.Repository.PatientRepository;
 import puig.xeill.Clinic.Repository.VisitRepository;
 import puig.xeill.Clinic.Security.JwtUtil;
+import puig.xeill.Clinic.Security.Security;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,10 +37,10 @@ public class VisitController {
     }
 
     @PostMapping("create")
-    public Long create(@RequestBody VisitRequest visitRequest, @RequestHeader String token) {
+    public Long create(@RequestBody VisitRequest visitRequest, @RequestHeader String token) throws Exception {
 
         String name = jwtUtil.getNameFromToken(token);
-        Optional<Patient> patientOptional = patientRepository.findByDni(visitRequest.getDni());
+        Optional<Patient> patientOptional = patientRepository.findByDni(Security.encrypt(visitRequest.getDni()));
         Optional<Dentist> dentistOptional;
         System.out.println(token);
         System.out.println(patientOptional.get().getName());

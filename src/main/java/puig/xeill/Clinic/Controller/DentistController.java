@@ -8,8 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import puig.xeill.Clinic.Model.DTO.DentistDTO;
+import puig.xeill.Clinic.Model.Persons.Admin;
 import puig.xeill.Clinic.Model.Persons.Dentist;
 import puig.xeill.Clinic.Model.Specialty;
+import puig.xeill.Clinic.Repository.AdminRepository;
 import puig.xeill.Clinic.Repository.DentistRepository;
 import puig.xeill.Clinic.Repository.SpecialtyRepository;
 import puig.xeill.Clinic.Security.JwtUtil;
@@ -28,6 +30,9 @@ public class DentistController {
 
     @Autowired
     DentistRepository dentistRepository;
+
+    @Autowired
+    AdminRepository adminRepository;
 
     @Autowired
     SpecialtyRepository specialtyRepository;
@@ -92,7 +97,7 @@ public class DentistController {
     }
 
     @PostMapping("/create")
-    public DentistDTO register(@RequestBody DentistDTO dentistDTO) throws Exception {
+    public DentistDTO register(@RequestBody DentistDTO dentistDTO, @RequestHeader String token) throws Exception {
 
             dentistDTO.setPassword(passwordEncoder.encode(dentistDTO.getPassword()));
             List<Specialty> specialties = new ArrayList<Specialty>();
@@ -118,5 +123,46 @@ public class DentistController {
             dentistRepository.save(dentist);
             return dentistDTO;
     }
+
+    @PostMapping("/update")
+    public DentistDTO edit(@RequestBody DentistDTO dentistDTO, @RequestHeader String token) throws Exception {
+
+        String name = jwtUtil.getNameFromToken(token);
+        Optional<Admin> adminOptional = adminRepository.findByUser(name);
+
+        if(adminOptional.isPresent()){
+            dentistDTO.setPassword(passwordEncoder.encode(dentistDTO.getPassword()));
+            List<Specialty> specialties = new ArrayList<Specialty>();
+
+            dentistDTO.getSpecialties().forEach(specialtyID -> {
+                Optional<Specialty> specialtyOptional = specialtyRepository.findById(specialtyID);
+
+                if(specialtyOptional.isPresent()){
+                    Specialty specialty = specialtyOptional.get();
+                    specialties.add(specialty);
+                }
+
+
+            });
+
+            Optional<Dentist> dentistOptional = dentistRepository.findByUser(dentistDTO.getUser());
+            if (dentistOptional.isPresent()){
+                dentistOptional.get().setUser(dentistDTO.getUser());
+                dentistOptional.get().setName(passwordEncoder.encode(dentistDTO.getName()));
+                dentistOptional.get().setPassword(Security.encrypt(dentistDTO.getPassword()));
+                dentistOptional.get().setIdSchedule(dentistDTO.getIdSchedule());
+                dentistOptional.get().setSpecialties(specialties);
+                System.out.println(dentistOptional.get().getSpecialties());
+                Dentist dentist = dentistOptional.get();
+
+                dentistRepository.save(dentist);
+                return dentistDTO;
+            }
+
+        }
+        return null;
+    }
+
+
 
 }
