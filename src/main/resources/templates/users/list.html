@@ -121,131 +121,64 @@
     <script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/scripts/navbar.js}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             const authToken = localStorage.getItem('authToken');
+            const userRole = localStorage.getItem('userRole');
+    
             if (!authToken) {
                 window.location.href = '/login';
                 return;
             }
-            document.getElementById('app').style.display = 'block';
-
-            const userRole = localStorage.getItem('userRole');
+    
             if (userRole === 'dentist') {
                 window.location.href = '/error.html';
+                return;
             }
-
-            // Añadir el token a todas las peticiones fetch
-            const fetchWithAuth = (url, options = {}) => {
-                return fetch(url, {
+    
+            document.getElementById('app').style.display = 'block';
+    
+            window.fetchWithAuth = (url, options = {}) => {
+                const fullUrl = url.startsWith('http') ? url : window.location.origin + url;
+                return fetch(fullUrl, {
                     ...options,
                     headers: {
                         ...options.headers,
-                        'Authorization': `Bearer ${authToken}`
-                    }
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'include'
                 });
             };
-
-            // Mapa de especialidades
-            const SPECIALTIES_MAP = {
-                1: 'Odontología General',
-                2: 'Ortodoncia',
-                3: 'Endodoncia',
-                4: 'Periodoncia',
-                5: 'Cirugía Oral',
-                6: 'Odontopediatría',
-                7: 'Implantología',
-                8: 'Estética Dental'
-            };
-
-            // Variables globales para la búsqueda
-            let allUsers = [];
-            let isSearching = false;
-            let totalPagesCount = 0;
-
-            // Eventos de búsqueda
+    
+            window.allUsers = [];
+            window.isSearching = false;
+            window.totalPagesCount = 0;
+    
             document.getElementById('searchButton').addEventListener('click', performSearch);
             document.getElementById('clearSearch').addEventListener('click', clearSearch);
-            
-            // Búsqueda al presionar Enter
             ['searchName', 'searchUser'].forEach(id => {
                 document.getElementById(id).addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        performSearch();
-                    }
+                    if (e.key === 'Enter') performSearch();
                 });
             });
-
-            // Cargar primera página
+    
             loadUsers(0);
         });
-
-        async function loadAllPages() {
-            const firstPageData = await fetchWithAuth('/users/get?page=0').then(r => r.json());
-            totalPagesCount = firstPageData.totalPages;
-            allUsers = [...firstPageData.content];
-
-            const remainingPages = Array.from({length: totalPagesCount - 1}, (_, i) => i + 1);
-            const promises = remainingPages.map(page => 
-                fetchWithAuth(`/users/get?page=${page}`)
-                    .then(r => r.json())
-                    .then(data => allUsers.push(...data.content))
-            );
-
-            await Promise.all(promises);
-            return allUsers;
-        }
-
-        async function performSearch() {
-            const nameSearch = document.getElementById('searchName').value.toLowerCase();
-            const userSearch = document.getElementById('searchUser').value.toLowerCase();
-
-            if (!nameSearch && !userSearch) {
-                return;
-            }
-
-            const tbody = document.querySelector('tbody');
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Buscando...</span></div></td></tr>';
-
-            try {
-                if (!isSearching) {
-                    isSearching = true;
-                    await loadAllPages();
-                }
-
-                const filteredUsers = allUsers.filter(user => {
-                    const matchName = !nameSearch || user.name.toLowerCase().includes(nameSearch);
-                    const matchUser = !userSearch || user.user.toLowerCase().includes(userSearch);
-                    return matchName && matchUser;
-                });
-
-                updateTable(filteredUsers);
-                
-                const info = document.querySelector('.text-muted');
-                info.textContent = `${filteredUsers.length} resultados encontrados`;
-                
-                document.querySelector('.pagination').style.display = 'none';
-
-            } catch (error) {
-                console.error('Error:', error);
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al realizar la búsqueda</td></tr>';
-            }
-        }
-
-        function clearSearch() {
-            document.getElementById('searchName').value = '';
-            document.getElementById('searchUser').value = '';
-            isSearching = false;
-            allUsers = [];
-            document.querySelector('.pagination').style.display = 'flex';
-            loadUsers(0);
-        }
-
+    
         function loadUsers(page) {
-            if (isSearching) return;
-
+            if (window.isSearching) return;
+    
             fetchWithAuth(`/users/get?page=${page}`)
                 .then(response => {
-                    if (!response.ok) throw new Error('Error al obtener usuarios');
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) {
+                            window.location.href = '/login';
+                            return;
+                        }
+                        throw new Error('Error al obtener usuarios');
+                    }
                     return response.json();
                 })
                 .then(data => {
@@ -254,40 +187,30 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    const tbody = document.querySelector('tbody');
-                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error: ${error.message}</td></tr>`;
+                    document.querySelector('tbody').innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error: ${error.message}</td></tr>`;
                 });
         }
-
+    
         function updateTable(users) {
             const tbody = document.querySelector('tbody');
             tbody.innerHTML = '';
-
+    
             users.forEach(user => {
-                const specialtiesText = user.specialties ? 
-                    user.specialties.map(id => SPECIALTIES_MAP[id] || `Especialidad ${id}`).join(', ') : 
-                    'Admin';
-
                 const row = `
                     <tr>
-                        <td>${user.idSchedule || ''}</td>
+                        <td>${user.id || ''}</td>
                         <td>${user.user || ''}</td>
                         <td>${user.name || ''}</td>
                         <td>
-                            <span class="badge ${user.specialties ? 'bg-info' : 'bg-danger'}">
-                                ${specialtiesText}
+                            <span class="badge bg-info">
+                                ${user.user === 'admin' ? 'Administrador' : 'Usuario'}
                             </span>
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="/users/${user.idSchedule}" class="btn btn-outline-primary" title="Ver">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="/users/${user.idSchedule}/edit" class="btn btn-outline-secondary" title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <button type="button" class="btn btn-outline-danger" title="Eliminar"
-                                        onclick="deleteUser(${user.idSchedule})">
+                                <a href="/users/${user.id}" class="btn btn-outline-primary"><i class="bi bi-eye"></i></a>
+                                <a href="/users/${user.id}/edit" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                                <button type="button" class="btn btn-outline-danger" onclick="deleteUser(${user.id})">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
@@ -296,47 +219,114 @@
                 `;
                 tbody.insertAdjacentHTML('beforeend', row);
             });
+    
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No se encontraron usuarios</td></tr>';
+            }
         }
-
+    
         function updatePagination(data) {
             const pagination = document.querySelector('.pagination');
             let html = '';
-
+    
             html += `
                 <li class="page-item ${data.first ? 'disabled' : ''}">
-                    <a class="page-link" href="/users/get?page=${data.number - 1}">
+                    <a class="page-link" onclick="loadUsers(${data.number - 1}); return false;" href="#">
                         <i class="bi bi-chevron-left"></i> Anterior
                     </a>
                 </li>
             `;
-
+    
             for (let i = 0; i < data.totalPages; i++) {
                 html += `
                     <li class="page-item ${i === data.number ? 'active' : ''}">
-                        <a class="page-link" href="/users/get?page=${i}">${i + 1}</a>
+                        <a class="page-link" onclick="loadUsers(${i}); return false;" href="#">${i + 1}</a>
                     </li>
                 `;
             }
-
+    
             html += `
                 <li class="page-item ${data.last ? 'disabled' : ''}">
-                    <a class="page-link" href="/users/get?page=${data.number + 1}">
+                    <a class="page-link" onclick="loadUsers(${data.number + 1}); return false;" href="#">
                         Siguiente <i class="bi bi-chevron-right"></i>
                     </a>
                 </li>
             `;
-
+    
             pagination.innerHTML = html;
-
-            const info = document.querySelector('.text-muted');
-            info.textContent = `Mostrando página ${data.number + 1} de ${data.totalPages} (Total: ${data.totalElements} usuarios)`;
+    
+            document.querySelector('.text-muted').textContent =
+                `Mostrando página ${data.number + 1} de ${data.totalPages} (Total: ${data.totalElements} usuarios)`;
         }
-
+    
+        async function loadAllPages() {
+            const firstPageData = await fetchWithAuth('/users/get?page=0').then(r => r.json());
+            window.totalPagesCount = firstPageData.totalPages;
+            window.allUsers = [...firstPageData.content];
+    
+            const remainingPages = Array.from({ length: window.totalPagesCount - 1 }, (_, i) => i + 1);
+            const promises = remainingPages.map(page =>
+                fetchWithAuth(`/users/get?page=${page}`)
+                    .then(r => r.json())
+                    .then(data => window.allUsers.push(...data.content))
+            );
+    
+            await Promise.all(promises);
+            return window.allUsers;
+        }
+    
+        async function performSearch() {
+            const nameSearch = document.getElementById('searchName').value.toLowerCase();
+            const userSearch = document.getElementById('searchUser').value.toLowerCase();
+    
+            if (!nameSearch && !userSearch) return;
+    
+            document.querySelector('tbody').innerHTML = `
+                <tr><td colspan="5" class="text-center">
+                    <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Buscando...</span></div>
+                </td></tr>
+            `;
+    
+            try {
+                if (!window.isSearching) {
+                    window.isSearching = true;
+                    await loadAllPages();
+                }
+    
+                const filtered = window.allUsers.filter(user => {
+                    const matchName = !nameSearch || (user.name && user.name.toLowerCase().includes(nameSearch));
+                    const matchUser = !userSearch || (user.user && user.user.toLowerCase().includes(userSearch));
+                    return matchName && matchUser;
+                });
+    
+                updateTable(filtered);
+                document.querySelector('.text-muted').textContent = `${filtered.length} resultados encontrados`;
+                document.querySelector('.pagination').style.display = 'none';
+    
+            } catch (error) {
+                console.error('Error al buscar:', error);
+                document.querySelector('tbody').innerHTML = `
+                    <tr><td colspan="5" class="text-center text-danger">Error al realizar la búsqueda</td></tr>
+                `;
+            }
+        }
+    
+        function clearSearch() {
+            document.getElementById('searchName').value = '';
+            document.getElementById('searchUser').value = '';
+            window.isSearching = false;
+            window.allUsers = [];
+            document.querySelector('.pagination').style.display = 'flex';
+            loadUsers(0);
+        }
+    
         function deleteUser(id) {
             if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
                 console.log('Eliminar usuario:', id);
+                // Aquí haces la petición DELETE si quieres
             }
         }
     </script>
+    
 </body>
 </html> 
