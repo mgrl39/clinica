@@ -17,9 +17,11 @@
     <style>
         .option-card {
             cursor: pointer;
+            transition: all 0.3s ease;
         }
         .option-card:hover {
             box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+            transform: translateY(-5px);
         }
         .card-icon {
             font-size: 3rem;
@@ -63,19 +65,19 @@
                             </div>
                         </div>
 
-                        <!-- Opción Administrador -->
+                        <!-- Opción Paciente -->
                         <div class="col-md-5">
-                            <div class="card h-100 option-card" onclick="window.location.href='/admin/create'">
+                            <div class="card h-100 option-card" onclick="window.location.href='/patients/create'">
                                 <div class="card-body text-center p-5">
-                                    <i class="bi bi-shield-lock card-icon mb-3"></i>
-                                    <h3 class="card-title">Administrador</h3>
+                                    <i class="bi bi-person-heart card-icon mb-3" style="color: #198754;"></i>
+                                    <h3 class="card-title">Paciente</h3>
                                     <p class="card-text text-muted">
-                                        Crear una nueva cuenta de administrador.
-                                        Tendrá acceso completo al sistema.
+                                        Registrar un nuevo paciente en el sistema.
+                                        Podrá agendar citas y seguimiento.
                                     </p>
-                                    <a href="/admin/create" class="btn btn-danger btn-lg mt-3">
+                                    <a href="/patients/create" class="btn btn-success btn-lg mt-3">
                                         <i class="bi bi-plus-circle me-2"></i>
-                                        Alta Administrador
+                                        Alta Paciente
                                     </a>
                                 </div>
                             </div>
@@ -105,10 +107,6 @@
             if (!authToken) {
                 window.location.href = '/login';
                 return;
-            }
-            const userRole = localStorage.getItem('userRole');
-            if (userRole === 'dentist') {
-                window.location.href = '/error.html';
             }
             document.getElementById('app').style.display = 'block';
         });

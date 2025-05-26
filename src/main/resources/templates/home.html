@@ -13,15 +13,20 @@
         }
     </script>
     <style>
-        .stat-card {
-            transition: transform 0.2s;
+        .welcome-section {
+            background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), url('/images/dental-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            min-height: calc(100vh - 60px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
         }
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        .stat-icon {
-            font-size: 2.5rem;
-            opacity: 0.8;
+        .logo-img {
+            max-width: 200px;
+            margin-bottom: 2rem;
         }
     </style>
 </head>
@@ -33,44 +38,26 @@
             
             <!-- Contenido principal con navbar arriba -->
             <div class="flex-grow-1 d-flex flex-column">
-                <!-- Navbar superior (ahora solo ocupa el espacio a la derecha del sidebar) -->
+                <!-- Navbar superior -->
                 <div th:replace="~{fragments/navbar :: topNav}"></div>
                 
                 <!-- Contenido principal -->
-                <main class="flex-grow-1 p-4">
-                    <div class="container-fluid">
-                        <!-- Encabezado -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h1 class="display-5">¡Bienvenido/a a la Clínica Odontológica!</h1>
-                                <p class="lead text-muted">Panel de control principal</p>
-                            </div>
-                        </div>
-
-                        <!-- Lista de Odontólogos Activos -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header bg-white">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-0">
-                                                <i class="bi bi-person-badge me-2"></i>
-                                                Odontólogos Disponibles
-                                            </h5>
-                                            <span id="dentistCount" class="badge bg-primary"></span>
-                                        </div>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row" id="dentistsList">
-                                            <!-- Se llenará dinámicamente -->
-                                            <div class="col-12 text-center">
-                                                <div class="spinner-border text-primary" role="status">
-                                                    <span class="visually-hidden">Cargando...</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                <main class="flex-grow-1">
+                    <div class="welcome-section">
+                        <div class="container">
+                            <h1 class="display-4 mb-4">¡Bienvenido/a a la Clínica Odontológica!</h1>
+                            <p class="lead text-muted">
+                                Sistema de gestión de pacientes y citas
+                            </p>
+                            <div class="mt-5">
+                                <a href="/patients/list" class="btn btn-primary btn-lg me-3">
+                                    <i class="bi bi-people me-2"></i>
+                                    Ver Pacientes
+                                </a>
+                                <a href="/visits/list" class="btn btn-success btn-lg">
+                                    <i class="bi bi-calendar-check me-2"></i>
+                                    Gestionar Citas
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -92,101 +79,6 @@
                 return;
             }
             document.getElementById('app').style.display = 'block';
-
-            // Añadir el token a todas las peticiones fetch
-            const fetchWithAuth = (url, options = {}) => {
-                return fetch(url, {
-                    ...options,
-                    headers: {
-                        ...options.headers,
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-            };
-
-            // Mapa de especialidades
-            const SPECIALTIES_MAP = {
-                1: 'Odontología General',
-                2: 'Ortodoncia',
-                3: 'Endodoncia',
-                4: 'Periodoncia',
-                5: 'Cirugía Oral',
-                6: 'Odontopediatría',
-                7: 'Implantología',
-                8: 'Estética Dental'
-            };
-
-            function loadDentists() {
-                fetchWithAuth('/dentists/get?page=0')
-                    .then(response => {
-                        if (!response.ok) {
-                            if (response.status === 401 || response.status === 403) {
-                                window.location.href = '/login';
-                                return;
-                            }
-                            throw new Error('Error al obtener los dentistas');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        updateDentistsList(data.content);
-                        document.getElementById('dentistCount').textContent = `${data.totalElements} odontólogos`;
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        document.getElementById('dentistsList').innerHTML = `
-                            <div class="col-12">
-                                <div class="alert alert-danger" role="alert">
-                                    Error al cargar los odontólogos
-                                </div>
-                            </div>
-                        `;
-                    });
-            }
-
-            function updateDentistsList(dentists) {
-                const dentistsList = document.getElementById('dentistsList');
-                dentistsList.innerHTML = '';
-
-                dentists.forEach(dentist => {
-                    const specialties = dentist.specialties
-                        .map(id => SPECIALTIES_MAP[id] || `Especialidad ${id}`)
-                        .join(', ');
-
-                    const card = `
-                        <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <i class="bi bi-person-circle text-primary me-2" style="font-size: 2rem;"></i>
-                                        <div>
-                                            <h5 class="card-title mb-0">${dentist.name}</h5>
-                                            <small class="text-muted">@${dentist.user}</small>
-                                        </div>
-                                    </div>
-                                    <div class="mb-2">
-                                        <strong>Especialidades:</strong>
-                                        <div class="mt-1">
-                                            ${dentist.specialties.map(id => `
-                                                <span class="badge bg-info me-1">
-                                                    ${SPECIALTIES_MAP[id] || `Especialidad ${id}`}
-                                                </span>
-                                            `).join('')}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <strong>Horario:</strong>
-                                        <p class="mb-0 text-muted">
-                                            ${dentist.schedule ? dentist.schedule.description : 'No especificado'}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    dentistsList.insertAdjacentHTML('beforeend', card);
-                });
-            }
         });
     </script>
 </body>
