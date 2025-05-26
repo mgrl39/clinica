@@ -98,9 +98,11 @@ public class UserController {
         // Primero buscar si es dentista
         Optional<Dentist> dentistOptional = dentistRepository.findByUser(user.getUser());
         if (dentistOptional.isPresent()) {
+            System.out.println(user.getPassword());
             if (passwordEncoder.matches(user.getPassword(), dentistOptional.get().getPassword())) {
                 return jwtUtil.generateToken(user.getUser());
             }
+            return "aaaa";
         }
         // Si no es dentista, buscar si es admin
         Optional<Admin> adminOptional = adminRepository.findByUser(user.getUser());

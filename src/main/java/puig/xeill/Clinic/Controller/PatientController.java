@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import puig.xeill.Clinic.Model.DTO.DentistDTO;
 import puig.xeill.Clinic.Model.Persons.Admin;
 import puig.xeill.Clinic.Model.Persons.Patient;
+import puig.xeill.Clinic.Repository.AdminRepository;
 import puig.xeill.Clinic.Repository.PatientRepository;
 import puig.xeill.Clinic.Security.JwtUtil;
 import puig.xeill.Clinic.Security.Security;
@@ -31,6 +32,9 @@ public class PatientController {
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    @Autowired
+    AdminRepository adminRepository;
 
     JwtUtil jwtUtil = new JwtUtil();
 
@@ -96,5 +100,36 @@ public class PatientController {
         return null;
         //return null;
     }
+
+    @PostMapping("/update")
+    public Patient edit(@RequestBody Patient patient, @RequestHeader String token) throws Exception {
+
+        String name = jwtUtil.getNameFromToken(token);
+        Optional<Admin> adminOptional = adminRepository.findByUser(name);
+
+        if (adminOptional.isPresent()){
+            Optional<Patient> patientOptional = patientRepository.findByDni(Security.decrypt(patient.getDni()));
+            if (patientOptional.isPresent()) {
+
+                Patient existingPatient = patientOptional.get();
+
+                Period edad = Period.between(existingPatient.getBornDate(), LocalDate.now());
+
+                if(edad.getYears() >= 18) {
+                    existingPatient.setTutor(null);
+                } else {
+                    existingPatient.setTutor(Security.encrypt(patient.getTutor()));
+                }
+
+                existingPatient.setName(Security.encrypt(patient.getName()));
+
+                patientRepository.save(existingPatient);
+
+                return existingPatient;
+            }
+        }
+        return null;
+    }
+
 
 }

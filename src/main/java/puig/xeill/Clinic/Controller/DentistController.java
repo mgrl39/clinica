@@ -102,7 +102,7 @@ public class DentistController {
             Dentist dentist = new Dentist();
             dentist.setUser(dentistDTO.getUser());
             dentist.setName(Security.encrypt(dentistDTO.getName()));
-            dentist.setPassword(passwordEncoder.encode(dentistDTO.getPassword()));
+            dentist.setPassword(dentistDTO.getPassword());
             dentist.setIdSchedule(dentistDTO.getIdSchedule());
             dentist.setSpecialties(specialties);
             System.out.println(dentist.getSpecialties());
