@@ -13,6 +13,7 @@ import puig.xeill.Clinic.Model.Specialty;
 import puig.xeill.Clinic.Repository.DentistRepository;
 import puig.xeill.Clinic.Repository.SpecialtyRepository;
 import puig.xeill.Clinic.Security.JwtUtil;
+import puig.xeill.Clinic.Security.Security;
 
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -64,7 +65,11 @@ public class DentistController {
         dentistList.forEach(dentist -> {
             DentistDTO dentistDTO = new DentistDTO();
             dentistDTO.setUser(dentist.getUser());
-            dentistDTO.setName(dentist.getName());
+            try {
+                dentistDTO.setName(Security.decrypt(dentist.getName()));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             dentistDTO.setIdSchedule(dentist.getIdSchedule());
             List specialtyLongList = new ArrayList<>();
             dentist.getSpecialties().forEach(specialty -> {
@@ -87,7 +92,7 @@ public class DentistController {
     }
 
     @PostMapping("/create")
-    public DentistDTO register(@RequestBody DentistDTO dentistDTO) {
+    public DentistDTO register(@RequestBody DentistDTO dentistDTO) throws Exception {
 
             dentistDTO.setPassword(passwordEncoder.encode(dentistDTO.getPassword()));
             List<Specialty> specialties = new ArrayList<Specialty>();
@@ -106,7 +111,7 @@ public class DentistController {
             Dentist dentist = new Dentist();
             dentist.setUser(dentistDTO.getUser());
             dentist.setName(passwordEncoder.encode(dentistDTO.getName()));
-            dentist.setPassword(passwordEncoder.encode(dentistDTO.getPassword()));
+            dentist.setPassword(Security.encrypt(dentistDTO.getPassword()));
             dentist.setIdSchedule(dentistDTO.getIdSchedule());
             dentist.setSpecialties(specialties);
             System.out.println(dentist.getSpecialties());
