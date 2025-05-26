@@ -1,6 +1,14 @@
 <!-- Sidebar vertical para escritorio -->
 <nav th:fragment="sidebar" class="d-none d-md-flex flex-column flex-shrink-0 p-3 text-white"
      style="width: 260px; min-height: 100vh; background: linear-gradient(180deg, #3a8dde 0%, #2563b9 100%);">
+    
+    <script>
+        // Verificación inmediata
+        if (!localStorage.getItem('authToken')) {
+            window.location.href = '/login';
+        }
+    </script>
+
     <!-- Logo y título -->
     <a href="/" class="d-flex align-items-center mb-4 text-white text-decoration-none">
         <img th:src="@{/assets/dentist.jpg}" alt="Logo" width="40" height="40" class="me-2 rounded-circle">
@@ -157,12 +165,36 @@
     </style>
 
     <!-- Scripts -->
-    <script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
+    <script th:fragment="sidebarScript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const authToken = localStorage.getItem('authToken');
+            if (!authToken) {
+                window.location.href = '/login';
+                return;
+            }
+
+            // Marcar el ítem activo del menú
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
 </nav>
 
 <!-- Navbar inferior para móvil -->
 <nav th:fragment="mobileNav" class="navbar navbar-dark bg-primary navbar-expand d-md-none fixed-bottom"
      style="background: linear-gradient(180deg, #3a8dde 0%, #2563b9 100%); box-shadow: 0 -2px 8px #0002;">
+    
+    <script>
+        // Verificación inmediata para móvil
+        if (!localStorage.getItem('authToken')) {
+            window.location.href = '/login';
+        }
+    </script>
+
     <ul class="navbar-nav nav-justified w-100">
         <li class="nav-item">
             <a class="nav-link text-white text-center" href="/home">

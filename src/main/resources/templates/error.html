@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Error - Clínica Odontológica</title>
+    <!-- Limpiar el token si hay error -->
+    <script>
+        localStorage.removeItem('authToken');
+    </script>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.1.3/css/bootstrap.min.css}" />
     <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.css}" />
     <style>
@@ -53,12 +57,12 @@
     <div class="error-container">
         <div class="error-card">
             <i class="bi bi-exclamation-triangle-fill error-icon"></i>
-            <h1 class="error-title">¡Ups! Página no encontrada</h1>
+            <h1 class="error-title">¡Ups! Algo salió mal</h1>
             <p class="error-message">
-                Lo sentimos, la página que buscas no existe o ha sido movida.
+                Lo sentimos, ha ocurrido un error. Por favor, inicia sesión nuevamente.
             </p>
-            <a href="/" class="btn-home">
-                <i class="bi bi-house-door"></i> Volver al inicio
+            <a href="/login" class="btn-home">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Ir al login
             </a>
         </div>
     </div>

@@ -3,9 +3,9 @@ spring:
     name: Clinic
 
   datasource:
-    username: clinica_user
-    password: clinica_password
-    url: jdbc:mysql://172.16.0.158:3306/clinica
+    username: root
+    password: Root@1234
+    url: jdbc:mysql://localhost:3306/clinica
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:

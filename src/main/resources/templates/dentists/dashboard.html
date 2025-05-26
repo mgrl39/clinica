@@ -5,38 +5,60 @@
     <title>Odontólogos | Clínica Odontológica</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.1.3/css/bootstrap.min.css}" />
     <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.css}" />
+    <!-- Verificación inmediata del token -->
+    <script>
+        if (!localStorage.getItem('authToken')) {
+            window.location.href = '/login';
+        }
+    </script>
 </head>
 <body>
-    <div class="d-flex min-vh-100">
-        <!-- Sidebar a la izquierda -->
-        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
-        
-        <!-- Contenido principal con navbar arriba -->
-        <div class="flex-grow-1 d-flex flex-column">
-            <!-- Navbar superior -->
-            <div th:replace="~{fragments/navbar :: topNav}"></div>
+    <div id="app" style="display: none;">
+        <div class="d-flex min-vh-100">
+            <!-- Sidebar a la izquierda -->
+            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
             
-            <!-- Contenido principal -->
-            <main class="flex-grow-1 p-4">
-                <h1>Clínica Odontológica</h1>
-                <h2>Panel de Odontólogos</h2>
-                <div class="d-flex flex-column align-items-start mt-4">
-                    <div class="card p-4" style="min-width:350px;">
-                        <h5 class="mb-3">ACCIONES:</h5>
-                        <a href="/dentists/list" class="btn btn-outline-primary mb-2 w-100">
-                            <i class="bi bi-table me-2"></i>Ver Odontólogos
-                        </a>
-                        <a href="/dentists/create" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-person-plus me-2"></i>Alta Odontólogos
-                        </a>
+            <!-- Contenido principal con navbar arriba -->
+            <div class="flex-grow-1 d-flex flex-column">
+                <!-- Navbar superior -->
+                <div th:replace="~{fragments/navbar :: topNav}"></div>
+                
+                <!-- Contenido principal -->
+                <main class="flex-grow-1 p-4">
+                    <h1>Clínica Odontológica</h1>
+                    <h2>Panel de Odontólogos</h2>
+                    <div class="d-flex flex-column align-items-start mt-4">
+                        <div class="card p-4" style="min-width:350px;">
+                            <h5 class="mb-3">ACCIONES:</h5>
+                            <a href="/dentists/list" class="btn btn-outline-primary mb-2 w-100">
+                                <i class="bi bi-table me-2"></i>Ver Odontólogos
+                            </a>
+                            <a href="/dentists/create" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-person-plus me-2"></i>Alta Odontólogos
+                            </a>
+                        </div>
                     </div>
-                </div>
-            </main>
+                </main>
+            </div>
         </div>
+        <!-- Navegación móvil -->
+        <div th:replace="~{fragments/sidebar :: mobileNav}"></div>
     </div>
-    <!-- Navegación móvil -->
-    <div th:replace="~{fragments/sidebar :: mobileNav}"></div>
+
     <script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/scripts/navbar.js}"></script>
+    
+    <script>
+        // Verificar autenticación al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            const authToken = localStorage.getItem('authToken');
+            if (!authToken) {
+                window.location.href = '/login';
+                return;
+            }
+            // Mostrar el contenido solo si hay token
+            document.getElementById('app').style.display = 'block';
+        });
+    </script>
 </body>
 </html>

@@ -1,4 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Verificar si ya está logueado
+  const authToken = localStorage.getItem('authToken');
+  if (authToken) {
+    window.location.href = '/home';
+    return;
+  }
+
   const loginForm = document.querySelector("form");
   const loginButton = document.querySelector("button[type='submit']");
   const errorMessage = document.getElementById("errorMessage");
@@ -23,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
       };
 
       // Send login request to backend
-      fetch("/dentists/login", {
+      fetch("/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

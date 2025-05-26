@@ -5,89 +5,146 @@
     <title>Lista de Odontólogos | Clínica Odontológica</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.1.3/css/bootstrap.min.css}" />
     <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.css}" />
+    <!-- Verificación inmediata del token -->
+    <script>
+        if (!localStorage.getItem('authToken')) {
+            window.location.href = '/login';
+        }
+    </script>
 </head>
 <body>
-    <div class="d-flex min-vh-100">
-        <!-- Sidebar a la izquierda -->
-        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
-        
-        <!-- Contenido principal con navbar arriba -->
-        <div class="flex-grow-1 d-flex flex-column">
-            <!-- Navbar superior -->
-            <div th:replace="~{fragments/navbar :: topNav}"></div>
+    <div id="app" style="display: none;">
+        <div class="d-flex min-vh-100">
+            <!-- Sidebar a la izquierda -->
+            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
             
-            <!-- Contenido principal -->
-            <main class="flex-grow-1 p-4">
-                <h1>Clínica Odontológica</h1>
-                <h2>Lista de Odontólogos</h2>
+            <!-- Contenido principal con navbar arriba -->
+            <div class="flex-grow-1 d-flex flex-column">
+                <!-- Navbar superior -->
+                <div th:replace="~{fragments/navbar :: topNav}"></div>
                 
-                <div class="card shadow-sm mt-4">
-                    <div class="card-header bg-light">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Odontólogos registrados</h5>
-                            <a href="/dentists/create" class="btn btn-primary btn-sm">
-                                <i class="bi bi-plus-lg"></i> Nuevo Odontólogo
-                            </a>
+                <!-- Contenido principal -->
+                <main class="flex-grow-1 p-4">
+                    <h1>Clínica Odontológica</h1>
+                    <h2>Lista de Odontólogos</h2>
+                    
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Odontólogos registrados</h5>
+                                <a href="/dentists/create" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-plus-lg"></i> Nuevo Odontólogo
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nombre</th>
-                                        <th>Usuario</th>
-                                        <th>Especialidades</th>
-                                        <th>Horario</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Se llenará dinámicamente por JavaScript -->
-                                </tbody>
-                            </table>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nombre</th>
+                                            <th>Usuario</th>
+                                            <th>Especialidades</th>
+                                            <th>Horario</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Se llenará dinámicamente por JavaScript -->
+                                    </tbody>
+                                </table>
 
-                            <!-- Añadir paginación -->
-                            <nav aria-label="Navegación de páginas">
-                                <ul class="pagination justify-content-center">
-                                    <!-- Aquí se inyecta la paginación vía JavaScript -->
-                                </ul>
-                            </nav>
+                                <!-- Añadir paginación -->
+                                <nav aria-label="Navegación de páginas">
+                                    <ul class="pagination justify-content-center">
+                                        <!-- Aquí se inyecta la paginación vía JavaScript -->
+                                    </ul>
+                                </nav>
 
-                            <!-- Información de la paginación -->
-                            <div class="text-center mt-2">
-                                <small class="text-muted">
-                                    Mostrando página 1 de 1 (Total: 0 dentistas)
-                                </small>
+                                <!-- Información de la paginación -->
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">
+                                        Mostrando página 1 de 1 (Total: 0 dentistas)
+                                    </small>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </main>
-        </div>
-    </div>
 
-    <!-- Navegación móvil -->
-    <div th:replace="~{fragments/sidebar :: mobileNav}"></div>
+                    <!-- Añadir filtro de disponibilidad después del header -->
+                    <div class="card-body border-bottom">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="showAvailable">
+                                    <label class="form-check-label" for="showAvailable">
+                                        Mostrar solo disponibles
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Navegación móvil -->
+        <div th:replace="~{fragments/sidebar :: mobileNav}"></div>
+    </div>
 
     <script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/scripts/navbar.js}"></script>
 
     <script>
-        // Añadir el mapa de especialidades al inicio del script
-        const SPECIALTIES_MAP = {
-            1: 'Odontología General',
-            2: 'Ortodoncia',
-            3: 'Endodoncia',
-            4: 'Periodoncia',
-            5: 'Cirugía Oral',
-            6: 'Odontopediatría',
-            7: 'Implantología',
-            8: 'Estética Dental'
-        };
-
+        // Mostrar el contenido solo si hay token
         document.addEventListener('DOMContentLoaded', function() {
+            const authToken = localStorage.getItem('authToken');
+            if (!authToken) {
+                window.location.href = '/login';
+                return;
+            }
+            // Mostrar el contenido solo si hay token
+            document.getElementById('app').style.display = 'block';
+
+            // Añadir el mapa de especialidades al inicio del script
+            const SPECIALTIES_MAP = {
+                1: 'Odontología General',
+                2: 'Ortodoncia',
+                3: 'Endodoncia',
+                4: 'Periodoncia',
+                5: 'Cirugía Oral',
+                6: 'Odontopediatría',
+                7: 'Implantología',
+                8: 'Estética Dental'
+            };
+
+            // Mapa de horarios y sus rangos
+            const SCHEDULE_HOURS = {
+                'Mañanas (9:00 - 14:00)': { start: 9, end: 14 },
+                'Tardes (16:00 - 20:00)': { start: 16, end: 20 },
+                'Jornada completa (9:00 - 18:00)': { start: 9, end: 18 }
+            };
+
+            let showOnlyAvailable = false;
+            let currentDentists = [];
+
+            function isCurrentlyAvailable(schedule) {
+                if (!schedule?.description) return false;
+
+                const hours = SCHEDULE_HOURS[schedule.description];
+                if (!hours) return false;
+
+                const now = new Date();
+                const currentHour = now.getHours();
+                const currentDay = now.getDay();
+
+                // Si es fin de semana (0 = domingo, 6 = sábado)
+                if (currentDay === 0 || currentDay === 6) return false;
+
+                return currentHour >= hours.start && currentHour < hours.end;
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             const currentPage = urlParams.get('page') || 0;
 
@@ -102,26 +159,57 @@
                     window.history.pushState({}, '', `/dentists/get?page=${pageNum}`);
                 }
             });
+
+            // Añadir evento para el checkbox
+            document.getElementById('showAvailable').addEventListener('change', function(e) {
+                showOnlyAvailable = e.target.checked;
+                filterAndUpdateTable();
+            });
         });
 
         function loadDentists(page) {
-            fetch(`/dentists/get?page=${page}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error al obtener los dentistas');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    updateTable(data.content);
+            const authToken = localStorage.getItem('authToken');
+            
+            fetch(`/dentists/get?page=${page}`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            })
+            .then(response => {
+                if (response.status === 401 || response.status === 403) {
+                    // Si el token no es válido o ha expirado
+                    localStorage.removeItem('authToken');
+                    window.location.href = '/login';
+                    return;
+                }
+                if (!response.ok) throw new Error('Error al obtener los dentistas');
+                return response.json();
+            })
+            .then(data => {
+                if (data) {  // Verificar que tenemos datos
+                    currentDentists = data.content;
+                    filterAndUpdateTable();
                     updatePagination(data);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    if (page !== 0) {
-                        window.location.href = '/dentists/get?page=0';
-                    }
-                });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (page !== 0) {
+                    window.location.href = '/dentists/get?page=0';
+                }
+            });
+        }
+
+        function filterAndUpdateTable() {
+            let filteredDentists = [...currentDentists];
+            
+            if (showOnlyAvailable) {
+                filteredDentists = filteredDentists.filter(dentist => 
+                    isCurrentlyAvailable(dentist.schedule)
+                );
+            }
+
+            updateTable(filteredDentists);
         }
 
         function updateTable(dentists) {
@@ -129,12 +217,18 @@
             tbody.innerHTML = '';
 
             dentists.forEach(dentist => {
-                // Convertir los IDs de especialidades a nombres
                 const specialtiesText = Array.isArray(dentist.specialties) && dentist.specialties.length > 0
                     ? dentist.specialties
                         .map(id => SPECIALTIES_MAP[id] || `Especialidad ${id}`)
                         .join(', ')
                     : 'Sin especialidades';
+
+                const isAvailable = isCurrentlyAvailable(dentist.schedule);
+                const scheduleStatus = dentist.schedule?.description ? 
+                    (isAvailable ? 
+                        '<span class="badge bg-success">Disponible</span>' : 
+                        '<span class="badge bg-danger">No disponible</span>') :
+                    '<span class="badge bg-danger">Sin horario asignado</span>';
 
                 const row = `
                     <tr>
@@ -142,7 +236,11 @@
                         <td>${dentist.name || ''}</td>
                         <td>${dentist.user || ''}</td>
                         <td>${specialtiesText}</td>
-                        <td>${dentist.schedule?.description || 'Sin horario'}</td>
+                        <td>
+                            ${dentist.schedule?.description || 'Sin horario'}
+                            <br>
+                            ${scheduleStatus}
+                        </td>
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a href="#" class="btn btn-outline-primary" title="Ver">

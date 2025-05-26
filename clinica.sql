@@ -81,3 +81,7 @@ CREATE INDEX idx_visits_patient ON visits(idPatient);
 CREATE INDEX idx_visits_dentist ON visits(idDentist);
 CREATE INDEX idx_visits_date_time ON visits(date, time);
 CREATE INDEX idx_dentists_schedule ON dentists(id_schedule);
+
+-- Add tutor column to patients table
+ALTER TABLE patients
+ADD COLUMN tutor VARCHAR(100) NULL;
