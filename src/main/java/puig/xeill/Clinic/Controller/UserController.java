@@ -95,26 +95,21 @@ public class UserController {
 
     @PostMapping("login")
     public String loginDentist(@RequestBody Dentist user) throws NoSuchAlgorithmException, KeyStoreException {
-
+        // Primero buscar si es dentista
         Optional<Dentist> dentistOptional = dentistRepository.findByUser(user.getUser());
-
-        if (!dentistOptional.isPresent()) {
-            Optional<Admin> adminOptional = adminRepository.findByUser(user.getUser());
-
-            if(!adminOptional.isPresent()){
-                return null;
-            }
+        if (dentistOptional.isPresent()) {
             if (passwordEncoder.matches(user.getPassword(), dentistOptional.get().getPassword())) {
-                String token = jwtUtil.generateToken(user.getUser());
-                return token;
+                return jwtUtil.generateToken(user.getUser());
             }
-            return null;
         }
-
-        if (passwordEncoder.matches(user.getPassword(), dentistOptional.get().getPassword())) {
-            String token = jwtUtil.generateToken(user.getUser());
-            return token;
+        // Si no es dentista, buscar si es admin
+        Optional<Admin> adminOptional = adminRepository.findByUser(user.getUser());
+        if (adminOptional.isPresent()) {
+            if (passwordEncoder.matches(user.getPassword(), adminOptional.get().getPassword())) {
+                return jwtUtil.generateToken(user.getUser());
+            }
         }
+        // Si no es ni dentista ni admin, o la contraseña es incorrecta
         return null;
     }
 

@@ -55,7 +55,7 @@ public class AdminController {
         Optional<Admin> adminOptional = adminRepository.findByUser(admin.getUser());
         if(!adminOptional.isPresent()){
             admin.setName(Security.encrypt(admin.getName()));
-            admin.setPassword(Security.encrypt(admin.getPassword()));
+            admin.setPassword(passwordEncoder.encode(admin.getPassword()));
             adminRepository.save(admin);
         }
         return null;
