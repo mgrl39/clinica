@@ -162,7 +162,7 @@
             const errorMessage = document.getElementById('errorMessage');
             const submitButton = document.getElementById('submitButton');
             
-            // Validar coincidencia de contraseñas
+            // Validación de contraseñas
             passwordConfirm.addEventListener('input', function() {
                 if(password.value !== passwordConfirm.value) {
                     passwordConfirm.classList.add('is-invalid');
@@ -173,104 +173,83 @@
                 }
             });
             
-            // Manejar envío del formulario
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                e.stopPropagation();
                 
-                // Restablecer mensajes de error
-                form.classList.remove('was-validated');
-                errorAlert.style.display = 'none';
-                successAlert.style.display = 'none';
-                
-                // Validar formulario manualmente
-                let isValid = true;
-                
-                // Validar que las contraseñas coincidan
-                if(password.value !== passwordConfirm.value) {
-                    passwordConfirm.classList.add('is-invalid');
-                    passwordMismatch.style.display = 'block';
-                    isValid = false;
-                }
-                
-                // Validar que al menos una especialidad esté seleccionada
-                let hasSpecialty = false;
-                const selectedSpecialties = [];
-                specialtyCheckboxes.forEach(checkbox => {
-                    if(checkbox.checked) {
-                        hasSpecialty = true;
-                        selectedSpecialties.push(parseInt(checkbox.value));
-                    }
-                });
-                
-                if(!hasSpecialty) {
-                    specialtiesError.style.display = 'block';
-                    isValid = false;
-                } else {
-                    specialtiesError.style.display = 'none';
-                }
-                
-                // Si no es válido, detener envío
-                if(!isValid) {
+                // Validaciones
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated');
                     return;
                 }
-                
-                // Desactivar botón y mostrar cargando
+
+                if (password.value !== passwordConfirm.value) {
+                    passwordConfirm.classList.add('is-invalid');
+                    passwordMismatch.style.display = 'block';
+                    return;
+                }
+
+                // Recoger especialidades seleccionadas
+                const selectedSpecialties = Array.from(specialtyCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => parseInt(cb.value));
+
+                if (selectedSpecialties.length === 0) {
+                    specialtiesError.style.display = 'block';
+                    return;
+                }
+
+                // Desactivar botón
                 submitButton.disabled = true;
-                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Guardando...';
-                
-                // Preparar datos para enviar
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+
+                // Preparar datos según el formato esperado por el backend
                 const dentistData = {
-                    name: document.getElementById('name').value,
                     user: document.getElementById('user').value,
+                    name: document.getElementById('name').value,
                     password: document.getElementById('password').value,
                     idSchedule: parseInt(document.getElementById('idSchedule').value),
                     specialties: selectedSpecialties
                 };
-                
-                // Token de autenticación (si existe)
-                const token = localStorage.getItem('authToken') || '';
-                
-                // Enviar datos al servidor
-                fetch('/dentists/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': token
-                    },
-                    body: JSON.stringify(dentistData)
-                })
-                .then(response => {
+
+                try {
+                    const response = await fetch('/dentists/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': localStorage.getItem('authToken') || ''
+                        },
+                        body: JSON.stringify(dentistData)
+                    });
+
                     if (!response.ok) {
-                        throw new Error('Error en el servidor. Por favor, inténtelo de nuevo.');
+                        const errorData = await response.text();
+                        throw new Error(errorData || 'Error al crear el dentista');
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    // Mostrar mensaje de éxito
+
+                    const data = await response.json();
+                    
+                    // Mostrar éxito
                     successAlert.style.display = 'block';
+                    errorAlert.style.display = 'none';
                     
                     // Resetear formulario
                     form.reset();
                     
-                    // Habilitar botón
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="bi bi-save me-2"></i>Guardar';
-                    
-                    // Opcionalmente, redirigir a la lista después de un tiempo
+                    // Redireccionar después de 2 segundos
                     setTimeout(() => {
                         window.location.href = '/dentists/list';
                     }, 2000);
-                })
-                .catch(error => {
-                    // Mostrar mensaje de error
-                    errorMessage.textContent = error.message || 'Error al registrar el odontólogo';
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    errorMessage.textContent = error.message;
                     errorAlert.style.display = 'block';
-                    
-                    // Habilitar botón
+                    successAlert.style.display = 'none';
+                } finally {
+                    // Restaurar botón
                     submitButton.disabled = false;
                     submitButton.innerHTML = '<i class="bi bi-save me-2"></i>Guardar';
-                });
+                }
             });
         });
     </script>

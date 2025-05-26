@@ -30,6 +30,40 @@
                             </a>
                         </div>
                     </div>
+                    <div class="card-body border-bottom">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" 
+                                           id="searchName" 
+                                           class="form-control" 
+                                           placeholder="Buscar por nombre...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person-vcard"></i>
+                                    </span>
+                                    <input type="text" 
+                                           id="searchDNI" 
+                                           class="form-control" 
+                                           placeholder="Buscar por DNI...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <button id="searchButton" class="btn btn-primary">
+                                    <i class="bi bi-search me-2"></i>Buscar
+                                </button>
+                                <button id="clearSearch" class="btn btn-outline-secondary ms-2">
+                                    <i class="bi bi-x-circle me-2"></i>Limpiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-hover">
@@ -91,29 +125,101 @@
         'PARTICULAR': 'Particular'
     };
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const currentPage = urlParams.get('page') || 0;
-        
-        loadPatients(currentPage);
+    // Variables globales para la búsqueda
+    let allPatients = [];
+    let isSearching = false;
+    let totalPagesCount = 0;
 
-        document.querySelector('.pagination').addEventListener('click', function(e) {
-            if (e.target.closest('.page-link')) {
-                e.preventDefault();
-                const pageUrl = e.target.closest('.page-link').getAttribute('href');
-                const pageNum = new URLSearchParams(new URL(pageUrl, window.location.href).search).get('page');
-                loadPatients(pageNum);
-                window.history.pushState({}, '', `/patients/get?page=${pageNum}`);
-            }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Eventos de búsqueda
+        document.getElementById('searchButton').addEventListener('click', performSearch);
+        document.getElementById('clearSearch').addEventListener('click', clearSearch);
+        
+        // Búsqueda al presionar Enter
+        ['searchName', 'searchDNI'].forEach(id => {
+            document.getElementById(id).addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
         });
+
+        // Cargar primera página
+        loadPatients(0);
     });
 
+    async function loadAllPages() {
+        const firstPageData = await fetch('/patients/get?page=0').then(r => r.json());
+        totalPagesCount = firstPageData.totalPages;
+        allPatients = [...firstPageData.content];
+
+        // Cargar el resto de páginas
+        const remainingPages = Array.from({length: totalPagesCount - 1}, (_, i) => i + 1);
+        const promises = remainingPages.map(page => 
+            fetch(`/patients/get?page=${page}`)
+                .then(r => r.json())
+                .then(data => allPatients.push(...data.content))
+        );
+
+        await Promise.all(promises);
+        return allPatients;
+    }
+
+    async function performSearch() {
+        const nameSearch = document.getElementById('searchName').value.toLowerCase();
+        const dniSearch = document.getElementById('searchDNI').value.toLowerCase();
+
+        if (!nameSearch && !dniSearch) {
+            return;
+        }
+
+        // Mostrar indicador de carga
+        const tbody = document.querySelector('tbody');
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Buscando...</span></div></td></tr>';
+
+        try {
+            if (!isSearching) {
+                isSearching = true;
+                await loadAllPages();
+            }
+
+            const filteredPatients = allPatients.filter(patient => {
+                const matchName = !nameSearch || patient.name.toLowerCase().includes(nameSearch);
+                const matchDNI = !dniSearch || patient.dni.toLowerCase().includes(dniSearch);
+                return matchName && matchDNI;
+            });
+
+            // Actualizar tabla con resultados
+            updateTable(filteredPatients);
+            
+            // Actualizar información de resultados
+            const info = document.querySelector('.text-muted');
+            info.textContent = `${filteredPatients.length} resultados encontrados`;
+            
+            // Ocultar paginación durante la búsqueda
+            document.querySelector('.pagination').style.display = 'none';
+
+        } catch (error) {
+            console.error('Error en la búsqueda:', error);
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al realizar la búsqueda</td></tr>';
+        }
+    }
+
+    function clearSearch() {
+        document.getElementById('searchName').value = '';
+        document.getElementById('searchDNI').value = '';
+        isSearching = false;
+        allPatients = [];
+        document.querySelector('.pagination').style.display = 'flex';
+        loadPatients(0);
+    }
+
     function loadPatients(page) {
+        if (isSearching) return;
+
         fetch(`/patients/get?page=${page}`)
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error al obtener los pacientes');
-                }
+                if (!response.ok) throw new Error('Error al obtener los pacientes');
                 return response.json();
             })
             .then(data => {
@@ -122,9 +228,8 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                if (page !== 0) {
-                    window.location.href = '/patients/get?page=0';
-                }
+                const tbody = document.querySelector('tbody');
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error: ${error.message}</td></tr>`;
             });
     }
 
