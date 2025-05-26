@@ -49,6 +49,7 @@
                                             <th>Odontólogo</th>
                                             <th>Tipo</th>
                                             <th>Estado</th>
+                                            <th>Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody id="visitsTableBody">
@@ -68,6 +69,115 @@
     <script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/scripts/navbar.js}"></script>
     <script>
+        // Definir variables y funciones globalmente
+        let fetchWithAuth;
+        
+        const VISIT_TYPE_MAP = {
+            'ROUTE_CHECKUP': 'Revisión Rutinaria',
+            'CAVITY': 'Caries',
+            'BROKEN_TOOTH': 'Diente Roto',
+            'OTHER': 'Otro'
+        };
+
+        function updateVisitsTable(visits) {
+            const tbody = document.getElementById('visitsTableBody');
+            tbody.innerHTML = '';
+
+            visits.forEach(visit => {
+                const row = `
+                    <tr>
+                        <td>${formatDate(visit.date)}</td>
+                        <td>${formatTime(visit.time)}</td>
+                        <td>${visit.patientName}</td>
+                        <td>${visit.patientDni}</td>
+                        <td>${visit.dentistName}</td>
+                        <td>
+                            <span class="badge bg-info">
+                                ${VISIT_TYPE_MAP[visit.reason] || visit.reason}
+                            </span>
+                        </td>
+                        <td>
+                            ${getStatusBadge(visit.date, visit.time)}
+                        </td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="cancelarVisita(${visit.id})">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            if (visits.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">No se encontraron citas</td></tr>';
+            }
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('es-ES');
+        }
+
+        function formatTime(timeString) {
+            return timeString;
+        }
+
+        function getStatusBadge(date, time) {
+            const visitDateTime = new Date(date + 'T' + time);
+            const now = new Date();
+
+            if (visitDateTime < now) {
+                return '<span class="badge bg-secondary">Completada</span>';
+            } else if (visitDateTime.toDateString() === now.toDateString()) {
+                return '<span class="badge bg-warning">Hoy</span>';
+            } else {
+                return '<span class="badge bg-success">Programada</span>';
+            }
+        }
+
+        async function cancelarVisita(id) {
+            if (!confirm('¿Está seguro que desea cancelar esta cita?')) {
+                return;
+            }
+
+            try {
+                const response = await fetchWithAuth(`/visits/cancel/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Visita cancelada correctamente');
+                    loadVisits();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Error al cancelar la visita:', error);
+                alert('Error al cancelar la visita');
+            }
+        }
+
+        function loadVisits() {
+            fetchWithAuth('/visits/get')
+                .then(response => {
+                    if (!response.ok) throw new Error('Error al cargar las citas');
+                    return response.json();
+                })
+                .then(data => {
+                    updateVisitsTable(data.content);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('Error al cargar las citas');
+                });
+        }
+
+        function showError(message) {
+            console.error(message);
+        }
+
+        // Event Listener para inicialización
         document.addEventListener('DOMContentLoaded', function() {
             const authToken = localStorage.getItem('authToken');
             if (!authToken) {
@@ -76,8 +186,8 @@
             }
             document.getElementById('app').style.display = 'block';
 
-            // Configurar fetchWithAuth
-            window.fetchWithAuth = (url, options = {}) => {
+            // Configurar fetchWithAuth globalmente
+            fetchWithAuth = (url, options = {}) => {
                 return fetch(url, {
                     ...options,
                     headers: {
@@ -88,87 +198,9 @@
                 });
             };
 
-            // Mapeo de tipos de visita
-            const VISIT_TYPE_MAP = {
-                'ROUTE_CHECKUP': 'Revisión Rutinaria',
-                'CAVITY': 'Caries',
-                'BROKEN_TOOTH': 'Diente Roto',
-                'OTHER': 'Otro'
-            };
-
-            function loadVisits() {
-                fetchWithAuth('/visits/get')
-                    .then(response => {
-                        if (!response.ok) throw new Error('Error al cargar las citas');
-                        return response.json();
-                    })
-                    .then(data => {
-                        updateVisitsTable(data.content);
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showError('Error al cargar las citas');
-                    });
-            }
-
-            function updateVisitsTable(visits) {
-                const tbody = document.getElementById('visitsTableBody');
-                tbody.innerHTML = '';
-
-                visits.forEach(visit => {
-                    const row = `
-                        <tr>
-                            <td>${formatDate(visit.date)}</td>
-                            <td>${formatTime(visit.time)}</td>
-                            <td>${visit.patientName}</td>
-                            <td>${visit.patientDni}</td>
-                            <td>${visit.dentistName}</td>
-                            <td>
-                                <span class="badge bg-info">
-                                    ${VISIT_TYPE_MAP[visit.reason] || visit.reason}
-                                </span>
-                            </td>
-                            <td>
-                                ${getStatusBadge(visit.date, visit.time)}
-                            </td>
-                        </tr>
-                    `;
-                    tbody.insertAdjacentHTML('beforeend', row);
-                });
-
-                if (visits.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No se encontraron citas</td></tr>';
-                }
-            }
-
-            function formatDate(dateString) {
-                return new Date(dateString).toLocaleDateString('es-ES');
-            }
-
-            function formatTime(timeString) {
-                return timeString;
-            }
-
-            function getStatusBadge(date, time) {
-                const visitDateTime = new Date(date + 'T' + time);
-                const now = new Date();
-
-                if (visitDateTime < now) {
-                    return '<span class="badge bg-secondary">Completada</span>';
-                } else if (visitDateTime.toDateString() === now.toDateString()) {
-                    return '<span class="badge bg-warning">Hoy</span>';
-                } else {
-                    return '<span class="badge bg-success">Programada</span>';
-                }
-            }
-
             // Iniciar carga de citas
             loadVisits();
         });
-
-        function showError(message) {
-            console.error(message);
-        }
     </script>
 </body>
 </html> 

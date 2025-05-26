@@ -184,6 +184,32 @@ public class VisitController {
         }
     }
 
+    @DeleteMapping("/cancel/{id}")
+    public ResponseEntity<?> cancelVisit(@PathVariable Long id, @RequestHeader String token) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            String username = jwtUtil.getNameFromToken(token);
+            Optional<Visit> visitOptional = visitRepository.findById(id);
+
+            if (visitOptional.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "No se encontró la visita especificada.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            Visit visit = visitOptional.get();
+            visitRepository.delete(visit);
+
+            response.put("success", true);
+            response.put("message", "Visita cancelada correctamente.");
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error al cancelar la visita: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
 
     private boolean isWithinWeekDayRange(WeekDay day, WeekDay start, WeekDay end) {
         int dayValue = day.ordinal();
