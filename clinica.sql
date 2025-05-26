@@ -66,22 +66,30 @@ CREATE TABLE visits (
     comment TEXT,
     date DATE NOT NULL,
     time TIME NOT NULL,
-    idPatient BIGINT NOT NULL,
-    idDentist BIGINT NOT NULL,
+    id_patient BIGINT NOT NULL,
+    id_dentist BIGINT NOT NULL,
     
     -- Create unique constraint for date-time-dentist combination
-    UNIQUE KEY unique_visit_datetime_dentist (date, time, idDentist),
+    UNIQUE KEY unique_visit_datetime_dentist (date, time, id_dentist),
     
-    FOREIGN KEY (idPatient) REFERENCES patients(id) ON DELETE CASCADE,
-    FOREIGN KEY (idDentist) REFERENCES dentists(id) ON DELETE CASCADE
+    FOREIGN KEY (id_patient) REFERENCES patients(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_dentist) REFERENCES dentists(id) ON DELETE CASCADE
 );
 
 -- Create useful indexes
-CREATE INDEX idx_visits_patient ON visits(idPatient);
-CREATE INDEX idx_visits_dentist ON visits(idDentist);
+CREATE INDEX idx_visits_patient ON visits(id_patient);
+CREATE INDEX idx_visits_dentist ON visits(id_dentist);
 CREATE INDEX idx_visits_date_time ON visits(date, time);
 CREATE INDEX idx_dentists_schedule ON dentists(id_schedule);
 
 -- Add tutor column to patients table
 ALTER TABLE patients
 ADD COLUMN tutor VARCHAR(100) NULL;
+
+-- Insert schedules
+INSERT INTO schedules (id, first_day, last_day, first_hour, last_hour) VALUES 
+(1, 'MONDAY', 'FRIDAY', '09:00:00', '17:00:00'),
+(2, 'MONDAY', 'THURSDAY', '08:00:00', '16:00:00'),
+(3, 'TUESDAY', 'FRIDAY', '10:00:00', '18:00:00'),
+(4, 'MONDAY', 'WEDNESDAY', '09:00:00', '15:00:00'),
+(5, 'WEDNESDAY', 'FRIDAY', '11:00:00', '19:00:00');

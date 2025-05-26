@@ -55,6 +55,7 @@ public class DentistController {
 
         dentistList.forEach(dentist -> {
             DentistDTO dentistDTO = new DentistDTO();
+            dentistDTO.setId(dentist.getId());
             dentistDTO.setUser(dentist.getUser());
             try {
                 dentistDTO.setName(Security.decrypt(dentist.getName()));
@@ -64,22 +65,18 @@ public class DentistController {
             dentistDTO.setIdSchedule(dentist.getIdSchedule());
             List specialtyLongList = new ArrayList<>();
             dentist.getSpecialties().forEach(specialty -> {
-                //SpecialtyDTO specialtyDTO = new SpecialtyDTO(specialty.getId(), specialty.getName());
                 specialtyLongList.add(specialty.getId());
             });
             dentistDTO.setSpecialties(specialtyLongList);
             dentistDTOList.add(dentistDTO);
         });
+
         Pageable pageable = PageRequest.of(page, 10);
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), dentistDTOList.size());
 
         List<DentistDTO> filterList = dentistDTOList.subList(start, end);
-
-        Page<DentistDTO> pagedResult = new PageImpl<>(filterList, pageable, dentistDTOList.size());
-
-        return  pagedResult;
-        //return dentistRepository.findAll(Pageable.ofSize(10).withPage(page));
+        return new PageImpl<>(filterList, pageable, dentistDTOList.size());
     }
 
     @PostMapping("/create")

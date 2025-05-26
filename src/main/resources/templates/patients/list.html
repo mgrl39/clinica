@@ -132,16 +132,16 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label">Fecha y Hora</label>
-                                                    <input type="datetime-local" class="form-control" id="visitDateTime" required disabled>
+                                                    <input type="datetime-local" class="form-control" id="visitDateTime" required>
                                                     <div class="form-text" id="scheduleInfo"></div>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label">Tipo de Visita</label>
                                                     <select class="form-select" id="visitType" required>
-                                                        <option value="REVISION">Revisión</option>
-                                                        <option value="LIMPIEZA">Limpieza</option>
-                                                        <option value="TRATAMIENTO">Tratamiento</option>
-                                                        <option value="URGENCIA">Urgencia</option>
+                                                        <option value="ROUTE_CHECKUP">Revisión Rutinaria</option>
+                                                        <option value="CAVITY">Caries</option>
+                                                        <option value="BROKEN_TOOTH">Diente Roto</option>
+                                                        <option value="OTHER">Otro</option>
                                                     </select>
                                                 </div>
                                             </form>
@@ -301,7 +301,6 @@
 
             // Configurar eventos
             document.getElementById('dentistSelect').addEventListener('change', updateDateTimeInput);
-            document.getElementById('visitDateTime').addEventListener('change', validateDateTime);
             document.getElementById('saveVisit').addEventListener('click', createVisit);
             
             // Cargar datos en paralelo: pacientes y dentistas
@@ -510,10 +509,21 @@
                 if (!response.ok) throw new Error(`Error al cargar odontólogos: ${response.status}`);
                 
                 const data = await response.json();
-                console.log('Datos de odontólogos recibidos:', data);
+                console.log('DATOS RECIBIDOS DE DENTISTAS:', data);
+                console.log('Contenido de dentistas:', data.content);
                 
                 // Guardar los dentistas en la variable global
                 window.dentistsData.dentists = data.content;
+                
+                // Log de cada dentista individual
+                data.content.forEach(dentist => {
+                    console.log('Dentista:', {
+                        id: dentist.id,
+                        name: dentist.name,
+                        specialties: dentist.specialties,
+                        idSchedule: dentist.idSchedule
+                    });
+                });
                 
                 // Cargar los horarios de cada dentista
                 const schedulePromises = data.content.map(async dentist => {
@@ -552,195 +562,80 @@
                 
                 const dentistSelect = document.getElementById('dentistSelect');
                 dentistSelect.innerHTML = '<option value="">Cargando odontólogos...</option>';
-                dentistSelect.disabled = true;
-
+                
                 if (!window.dentistsData.loaded) {
                     await preloadDentistsData();
                 }
 
+                console.log('Dentistas almacenados:', window.dentistsData.dentists);
+
+                // Llenar el select de dentistas
                 dentistSelect.innerHTML = '<option value="">Seleccione un odontólogo...</option>';
-                
-                for (const dentist of window.dentistsData.dentists) {
-                    const schedule = window.dentistsData.schedules[dentist.idSchedule];
-                    if (!schedule) continue;
-                    
+                window.dentistsData.dentists.forEach(dentist => {
+                    console.log('Creando opción para dentista:', dentist);
                     const option = document.createElement('option');
                     option.value = dentist.id;
-                    option.dataset.dentistInfo = JSON.stringify(dentist);
-                    option.dataset.schedule = JSON.stringify(schedule);
-
-                    const firstHour = new Date(schedule.firstHour).toLocaleTimeString('es-ES', {
-                        hour: '2-digit',
-                        minute: '2-digit'
+                    option.textContent = `${dentist.name} - ${dentist.specialties.map(id => SPECIALTIES_MAP[id]).join(', ')}`;
+                    console.log('Opción creada:', {
+                        value: option.value,
+                        text: option.textContent
                     });
-                    const lastHour = new Date(schedule.lastHour).toLocaleTimeString('es-ES', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-
-                    const dayMap = {
-                        'MONDAY': 'Lunes',
-                        'TUESDAY': 'Martes',
-                        'WEDNESDAY': 'Miércoles',
-                        'THURSDAY': 'Jueves',
-                        'FRIDAY': 'Viernes'
-                    };
-
-                    const scheduleText = `${dayMap[schedule.firstDay]} a ${dayMap[schedule.lastDay]} (${firstHour} - ${lastHour})`;
-                    const specialties = dentist.specialties
-                        .map(id => SPECIALTIES_MAP[id] || `Especialidad ${id}`)
-                        .join(', ');
-
-                    option.textContent = `${dentist.name} - ${specialties} - ${scheduleText}`;
                     dentistSelect.appendChild(option);
-                }
+                });
 
-                dentistSelect.disabled = false;
+                document.getElementById('visitDateTime').disabled = false;
                 visitModal.show();
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error al cargar los odontólogos. Por favor, inténtelo de nuevo.');
+                alert('Error al cargar los odontólogos: ' + error.message);
             }
         }
 
         function updateDateTimeInput() {
-            const dentistSelect = document.getElementById('dentistSelect');
             const dateTimeInput = document.getElementById('visitDateTime');
-            const scheduleInfo = document.getElementById('scheduleInfo');
-            
-            if (!dentistSelect.value) {
-                dateTimeInput.disabled = true;
-                scheduleInfo.textContent = '';
-                return;
-            }
-
-            const schedule = JSON.parse(dentistSelect.selectedOptions[0].dataset.schedule);
-            
-            // Configurar fecha mínima (mañana) y máxima (3 meses)
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(parseInt(schedule.firstHour.slice(11, 13)), parseInt(schedule.firstHour.slice(14, 16)), 0, 0);
-            
-            const maxDate = new Date();
-            maxDate.setMonth(maxDate.getMonth() + 3);
-            maxDate.setHours(parseInt(schedule.lastHour.slice(11, 13)), parseInt(schedule.lastHour.slice(14, 16)), 0, 0);
-
-            // Configurar restricciones del input datetime-local
-            dateTimeInput.min = tomorrow.toISOString().slice(0, 16);
-            dateTimeInput.max = maxDate.toISOString().slice(0, 16);
             dateTimeInput.disabled = false;
-
-            // Mostrar información del horario
-            const dayMap = {
-                'MONDAY': 'Lunes',
-                'TUESDAY': 'Martes',
-                'WEDNESDAY': 'Miércoles',
-                'THURSDAY': 'Jueves',
-                'FRIDAY': 'Viernes'
-            };
-
-            const firstHour = new Date(schedule.firstHour).toLocaleTimeString('es-ES', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            const lastHour = new Date(schedule.lastHour).toLocaleTimeString('es-ES', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-
-            scheduleInfo.innerHTML = `
-                <i class="bi bi-clock me-1"></i>
-                Horario disponible: ${dayMap[schedule.firstDay]} a ${dayMap[schedule.lastDay]}, 
-                de ${firstHour} a ${lastHour}
-            `;
-        }
-
-        function validateDateTime() {
-            const dateTimeInput = document.getElementById('visitDateTime');
-            const selectedOption = document.getElementById('dentistSelect').selectedOptions[0];
-            
-            if (!dateTimeInput.value || !selectedOption?.dataset.schedule) return false;
-            
-            const selectedDate = new Date(dateTimeInput.value);
-            const schedule = JSON.parse(selectedOption.dataset.schedule);
-            
-            // Mapeo de días para coincidir con el enum WeekDay del backend
-            const dayMap = {
-                0: 'SUNDAY',
-                1: 'MONDAY',
-                2: 'TUESDAY',
-                3: 'WEDNESDAY',
-                4: 'THURSDAY',
-                5: 'FRIDAY',
-                6: 'SATURDAY'
-            };
-            
-            const visitDay = dayMap[selectedDate.getDay()];
-            
-            // Validar día de la semana usando los valores del enum
-            if (!visitDay || visitDay === 'SUNDAY' || visitDay === 'SATURDAY') {
-                alert('No se pueden agendar citas en fin de semana');
-                dateTimeInput.value = '';
-                return false;
-            }
-
-            if (visitDay < schedule.firstDay || visitDay > schedule.lastDay) {
-                alert('La fecha seleccionada está fuera del horario del odontólogo');
-                dateTimeInput.value = '';
-                return false;
-            }
-            
-            // Validar hora
-            const selectedTime = selectedDate.getHours() + (selectedDate.getMinutes() / 60);
-            const scheduleFirstHour = new Date(schedule.firstHour).getHours() + 
-                             (new Date(schedule.firstHour).getMinutes() / 60);
-            const scheduleLastHour = new Date(schedule.lastHour).getHours() + 
-                            (new Date(schedule.lastHour).getMinutes() / 60);
-            
-            if (selectedTime < scheduleFirstHour || selectedTime >= scheduleLastHour) {
-                alert('La hora seleccionada está fuera del horario del odontólogo');
-                dateTimeInput.value = '';
-                return false;
-            }
-            
-            return true;
         }
 
         async function createVisit() {
-            if (!validateDateTime()) {
-                return;
-            }
-
             try {
                 const dateTimeInput = document.getElementById('visitDateTime');
+                const dentistSelect = document.getElementById('dentistSelect');
+                
+                // Verificar que se haya seleccionado un dentista
+                if (!dentistSelect.value) {
+                    alert('Por favor, seleccione un odontólogo');
+                    return;
+                }
+
+                if (!dateTimeInput.value) {
+                    alert('Por favor, selecciona una fecha y hora');
+                    return;
+                }
+
                 const selectedDateTime = new Date(dateTimeInput.value);
                 
-                // Formatear la fecha y hora como los espera el backend
-                const date = selectedDateTime.toISOString().split('T')[0]; // YYYY-MM-DD
-                const time = selectedDateTime.toLocaleTimeString('es-ES', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false
-                });
-
+                // Debug para ver qué valor tiene el select
+                console.log('Dentista seleccionado:', dentistSelect.value);
+                
                 const visitData = {
                     dni: document.getElementById('patientDni').value,
-                    id_dentist: parseInt(document.getElementById('dentistSelect').value),
-                    date: date,
-                    time: time,
+                    id_dentist: Number(dentistSelect.value), // Asegurarnos de que es un número
+                    date: selectedDateTime.toISOString().split('T')[0],
+                    time: selectedDateTime.toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    }),
                     reason: document.getElementById('visitType').value,
-                    comment: '' // Campo opcional
+                    comment: ''
                 };
 
-                console.log('Datos a enviar:', visitData);
+                // Debug para ver los datos que vamos a enviar
+                console.log('Datos a enviar:', JSON.stringify(visitData));
 
                 const response = await fetchWithAuth('/visits/create', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'token': localStorage.getItem('authToken')
-                    },
                     body: JSON.stringify(visitData)
                 });
 
@@ -822,11 +717,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             // ... código existente ...
             
-            // Cuando se selecciona un odontólogo, actualizar el input de fecha/hora
-            document.getElementById('dentistSelect').addEventListener('change', updateDateTimeInput);
-            
-            // Validar la fecha/hora cuando se selecciona
-            document.getElementById('visitDateTime').addEventListener('change', validateDateTime);
+            // Configurar el evento click del botón guardar
+            document.getElementById('saveVisit').addEventListener('click', createVisit);
         });
     </script>
 </body>

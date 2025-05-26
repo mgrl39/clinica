@@ -13,6 +13,7 @@ import java.util.List;
 @ToString
 public class DentistDTO {
 
+    private Long id;
     private Long idSchedule;
     private String user;
     private String password;
