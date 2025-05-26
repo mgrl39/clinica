@@ -3,6 +3,7 @@ package puig.xeill.Clinic.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import puig.xeill.Clinic.Model.DTO.VisitDTO;
 import puig.xeill.Clinic.Model.Enums.WeekDay;
 import puig.xeill.Clinic.Model.Persons.Dentist;
 import puig.xeill.Clinic.Model.Persons.Patient;
@@ -38,9 +39,31 @@ public class VisitController {
     @Autowired
     private VisitRepository visitRepository;
 
-    public List<Visit> show() {
-        return null;
+    @GetMapping("/get")
+    public List<VisitDTO> getVisits(@RequestHeader String token) throws Exception {
+        String username = jwtUtil.getNameFromToken(token);
+        Optional<Dentist> dentistOptional = dentistRepository.findByUser(username);
+        if (dentistOptional.isEmpty()) {
+            throw new Exception("Dentist not found");
+        }
+        Dentist dentist = dentistOptional.get();
+
+        List<Visit> visits = visitRepository.findByIdDentist(dentist);
+
+        List<VisitDTO> visitDTOList = visits.stream().map(visit -> {
+            VisitDTO visitDTO = new VisitDTO();
+            visitDTO.setId(visit.getId());
+            visitDTO.setReason(visit.getReason().toString());
+            visitDTO.setComment(visit.getComment());
+            visitDTO.setDate(visit.getDate());
+            visitDTO.setIdPatient(visit.getIdPatient().getId());
+            visitDTO.setIdDentist(visit.getIdDentist().getId());
+            return visitDTO;
+        }).toList();
+
+        return visitDTOList;
     }
+
     public String edit(@RequestBody Visit visit) {
         return null;
     }

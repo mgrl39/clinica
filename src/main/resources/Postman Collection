@@ -1,0 +1,193 @@
+{
+  "info": {
+    "name": "Clinica Collection",
+    "_postman_id": "e0e6a94f-1c79-4a78-9f22-abc123456789",
+    "description": "Colección con todos los endpoints y token automático",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"usuario\",\n  \"password\": \"contraseña\"\n}"
+        },
+        "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if(jsonData.token) {",
+              "    pm.environment.set(\"token\", jsonData.token);",
+              "    console.log(\"Token guardado en variable 'token'\");",
+              "} else {",
+              "    console.log(\"No se encontró token en la respuesta\");",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Visits",
+      "item": [
+        {
+          "name": "Get Visits",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "token", "value": "{{token}}"}],
+            "url": { "raw": "{{base_url}}/visits/get", "host": ["{{base_url}}"], "path": ["visits","get"] }
+          }
+        },
+        {
+          "name": "Create Visit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "token", "value": "{{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dni\": \"12345678A\",\n  \"id_dentist\": null,\n  \"date\": \"2025-05-30T10:00:00\",\n  \"time\": \"10:00:00\",\n  \"reason\": \"BROKEN_TOOTH\",\n  \"comment\": \"Consulta de prueba\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/visits/create", "host": ["{{base_url}}"], "path": ["visits","create"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patients",
+      "item": [
+        {
+          "name": "Show Patient",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "token", "value": "{{token}}"}],
+            "url": { "raw": "{{base_url}}/patients/show/19", "host": ["{{base_url}}"], "path": ["patients","show","19"] }
+          }
+        },
+        {
+          "name": "Get Patients",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "token", "value": "{{token}}"}],
+            "url": { "raw": "{{base_url}}/patients/get?page=0", "host": ["{{base_url}}"], "path": ["patients","get"], "query": [{"key":"page","value":"0"}] }
+          }
+        },
+        {
+          "name": "Create Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "token", "value": "{{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Juan Pérez\",\n  \"dni\": \"12345678A\",\n  \"bornDate\": \"1990-01-01\",\n  \"tutor\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/patients/create", "host": ["{{base_url}}"], "path": ["patients","create"] }
+          }
+        },
+        {
+          "name": "Update Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "token", "value": "{{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Juan Pérez\",\n  \"dni\": \"12345678A\",\n  \"bornDate\": \"1990-01-01\",\n  \"tutor\": \"Tutor Name\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/patients/update", "host": ["{{base_url}}"], "path": ["patients","update"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dentists",
+      "item": [
+        {
+          "name": "Get Dentists",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "token", "value": "{{token}}"}],
+            "url": { "raw": "{{base_url}}/dentists/get?page=0", "host": ["{{base_url}}"], "path": ["dentists","get"], "query": [{"key":"page","value":"0"}] }
+          }
+        },
+        {
+          "name": "Create Dentist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "token", "value": "{{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": \"dentista1\",\n  \"name\": \"Dr. Dentista\",\n  \"password\": \"1234\",\n  \"idSchedule\": 1,\n  \"specialties\": [1]\n}"
+            },
+            "url": { "raw": "{{base_url}}/dentists/create", "host": ["{{base_url}}"], "path": ["dentists","create"] }
+          }
+        },
+        {
+          "name": "Update Dentist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "token", "value": "{{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": \"dentista1\",\n  \"name\": \"Dr. Dentista Updated\",\n  \"password\": \"4321\",\n  \"idSchedule\": 1,\n  \"specialties\": [1]\n}"
+            },
+            "url": { "raw": "{{base_url}}/dentists/update", "host": ["{{base_url}}"], "path": ["dentists","update"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admins",
+      "item": [
+        {
+          "name": "Show Admin",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "token", "value": "{{token}}"}],
+            "url": { "raw": "{{base_url}}/admins/show/1", "host": ["{{base_url}}"], "path": ["admins","show","1"] }
+          }
+        },
+        {
+          "name": "Register Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "token", "value": "{{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": \"admin1\",\n  \"name\": \"Administrador\",\n  \"password\": \"adminpass\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/admins/register", "host": ["{{base_url}}"], "path": ["admins","register"] }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" }
+  ]
+}

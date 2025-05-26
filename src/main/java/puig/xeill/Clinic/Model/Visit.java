@@ -21,6 +21,7 @@ public class Visit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     private VisitReason reason;
     private String comment;
     private Date date;
