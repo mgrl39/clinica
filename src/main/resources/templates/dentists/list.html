@@ -46,7 +46,6 @@
                                             <th>Usuario</th>
                                             <th>Especialidades</th>
                                             <th>Horario</th>
-                                            <th>Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -286,7 +285,8 @@
             })
             .catch(error => {
                 console.error('Error al cargar:', error);
-                document.querySelector('tbody').innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error: ${error.message}</td></tr>`;
+                document.querySelector('tbody').innerHTML = 
+                    `<tr><td colspan="4" class="text-center text-danger">Error: ${error.message}</td></tr>`;
             });
     }
 
@@ -301,7 +301,7 @@
     function updateTable(dentists) {
         const tbody = document.querySelector('tbody');
         tbody.innerHTML = '';
-        const isAdmin = localStorage.getItem('userRole') === 'admin';
+        const isAdmin = dentists.some(d => d.id); // Si algún dentista tiene ID, es admin
 
         dentists.forEach(dentist => {
             const specialtiesText = Array.isArray(dentist.specialties)
@@ -318,20 +318,13 @@
                             <i class="bi bi-calendar2-week"></i> Ver Horario
                         </button>
                     </td>
-                    <td>
-                        ${isAdmin ? `
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteDentist(${dentist.idSchedule}, '${dentist.name}')">
-                                <i class="bi bi-trash"></i> Eliminar
-                            </button>
-                        ` : ''}
-                    </td>
                 </tr>
             `;
             tbody.insertAdjacentHTML('beforeend', row);
         });
 
         if (dentists.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No se encontraron dentistas</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No se encontraron dentistas</td></tr>';
         }
     }
 
