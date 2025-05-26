@@ -47,21 +47,7 @@ public class DentistController {
         return 0L;
     }
 
-    @PostMapping("login")
-    public String loginDentist(@RequestBody Dentist user) throws NoSuchAlgorithmException, KeyStoreException {
 
-        Optional<Dentist> dentistOptional = dentistRepository.findByUser(user.getUser());
-
-        if (!dentistOptional.isPresent()) {
-            return null;
-        }
-
-        if (passwordEncoder.matches(user.getPassword(), dentistOptional.get().getPassword())) {
-            String token = jwtUtil.generateToken(user.getUser());
-            return token;
-        }
-        return null;
-    }
     @GetMapping("/get")
     public Page<DentistDTO> getDentist (@RequestParam int page) {
         List<Dentist> dentistList  = dentistRepository.findAll();

@@ -16,6 +16,8 @@ import puig.xeill.Clinic.Security.Security;
 
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -80,6 +82,12 @@ public class PatientController {
 
     @PostMapping("/create")
     public Patient create(@RequestBody Patient patient) throws Exception {
+
+        Period edad = Period.between(patient.getBornDate(), LocalDate.now());
+        if(edad.getYears() >= 18) {
+            patient.setTutor(null);
+        }
+
         patient.setName(Security.encrypt(patient.getName()));
         patient.setDni(Security.encrypt(patient.getDni()));
         patientRepository.save(patient);

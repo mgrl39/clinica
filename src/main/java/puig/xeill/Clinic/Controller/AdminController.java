@@ -60,20 +60,4 @@ public class AdminController {
         }
         return null;
     }
-
-    @PostMapping("/login")
-    public String login(@RequestBody Admin admin) throws NoSuchAlgorithmException, KeyStoreException {
-
-        Optional<Admin> adminOptional = adminRepository.findByUser(admin.getUser());
-
-        if (!adminOptional.isPresent()) {
-            return null;
-        }
-
-        if (passwordEncoder.matches(admin.getPassword(), adminOptional.get().getPassword())) {
-            String token = jwtUtil.generateToken(admin.getUser());
-            return token;
-        }
-        return null;
-    }
 }
