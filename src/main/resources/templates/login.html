@@ -144,15 +144,20 @@
               }),
             });
 
-            if (!response.ok) {
-              throw new Error("Credenciales inválidas");
+            let data;
+            try {
+              data = await response.json();
+            } catch (e) {
+              // Si no puede parsear el JSON, mostramos un error personalizado
+              throw new Error("Usuario o contraseña incorrectos");
             }
 
-            const data = await response.json();
-            
+            if (!response.ok || !data) {
+              throw new Error("Usuario o contraseña incorrectos");
+            }
+
             if (data.token) {
               localStorage.setItem("authToken", data.token);
-              // Determinar el rol basado en el username
               const role = username.includes('admin') ? 'admin' : 'dentist';
               localStorage.setItem("userRole", role);
               window.location.href = "/home";
@@ -161,7 +166,8 @@
             }
           } catch (error) {
             console.error("Error:", error);
-            errorMessage.querySelector('span').textContent = error.message || "Error al iniciar sesión";
+            errorMessage.querySelector('span').textContent = 
+              error.message || "Usuario o contraseña incorrectos";
             errorMessage.style.display = "block";
           } finally {
             loginButton.disabled = false;

@@ -93,3 +93,13 @@ INSERT INTO schedules (id, first_day, last_day, first_hour, last_hour) VALUES
 (3, 'TUESDAY', 'FRIDAY', '10:00:00', '18:00:00'),
 (4, 'MONDAY', 'WEDNESDAY', '09:00:00', '15:00:00'),
 (5, 'WEDNESDAY', 'FRIDAY', '11:00:00', '19:00:00');
+
+INSERT INTO specialties (id, name) VALUES 
+(1, 'Odontología General'),
+(2, 'Ortodoncia'),
+(3, 'Endodoncia'),
+(4, 'Periodoncia'),
+(5, 'Odontopediatría'),
+(6, 'Cirugía Oral'),
+(7, 'Implantología'),
+(8, 'Estética Dental');
