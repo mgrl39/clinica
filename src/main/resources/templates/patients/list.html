@@ -37,15 +37,31 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Nombre</th>
-                                        <th>Email</th>
-                                        <th>Teléfono</th>
+                                        <th>Fecha Nacimiento</th>
+                                        <th>DNI</th>
+                                        <th>Tipo</th>
+                                        <th>Grupo Sanguíneo</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- Aquí se mostrarán los pacientes desde la base de datos -->
+                                    <!-- Se llenará dinámicamente por JavaScript -->
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- Añadir paginación -->
+                        <nav aria-label="Navegación de páginas">
+                            <ul class="pagination justify-content-center">
+                                <!-- Se llenará dinámicamente -->
+                            </ul>
+                        </nav>
+
+                        <!-- Información de la paginación -->
+                        <div class="text-center mt-2">
+                            <small class="text-muted">
+                                <!-- Se actualizará dinámicamente -->
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -56,5 +72,153 @@
     <div th:replace="~{fragments/sidebar :: mobileNav}"></div>
     <script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/scripts/navbar.js}"></script>
+
+<script>
+    // Mapas para conversión de valores
+    const BLOOD_TYPE_MAP = {
+        'A_POSITIVE': 'A+',
+        'A_NEGATIVE': 'A-',
+        'B_POSITIVE': 'B+',
+        'B_NEGATIVE': 'B-',
+        'AB_POSITIVE': 'AB+',
+        'AB_NEGATIVE': 'AB-',
+        'O_POSITIVE': 'O+',
+        'O_NEGATIVE': 'O-'
+    };
+
+    const PATIENT_TYPE_MAP = {
+        'MUTUAL': 'Mutualista',
+        'PARTICULAR': 'Particular'
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentPage = urlParams.get('page') || 0;
+        
+        loadPatients(currentPage);
+
+        document.querySelector('.pagination').addEventListener('click', function(e) {
+            if (e.target.closest('.page-link')) {
+                e.preventDefault();
+                const pageUrl = e.target.closest('.page-link').getAttribute('href');
+                const pageNum = new URLSearchParams(new URL(pageUrl, window.location.href).search).get('page');
+                loadPatients(pageNum);
+                window.history.pushState({}, '', `/patients/get?page=${pageNum}`);
+            }
+        });
+    });
+
+    function loadPatients(page) {
+        fetch(`/patients/get?page=${page}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener los pacientes');
+                }
+                return response.json();
+            })
+            .then(data => {
+                updateTable(data.content);
+                updatePagination(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (page !== 0) {
+                    window.location.href = '/patients/get?page=0';
+                }
+            });
+    }
+
+    function updateTable(patients) {
+        const tbody = document.querySelector('tbody');
+        tbody.innerHTML = '';
+
+        patients.forEach(patient => {
+            const row = `
+                <tr>
+                    <td>${patient.id || ''}</td>
+                    <td>${patient.name || ''}</td>
+                    <td>${formatDate(patient.bornDate)}</td>
+                    <td>${patient.dni || ''}</td>
+                    <td>
+                        <span class="badge ${patient.type === 'MUTUAL' ? 'bg-primary' : 'bg-success'}">
+                            ${PATIENT_TYPE_MAP[patient.type] || patient.type}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge bg-info">
+                            ${BLOOD_TYPE_MAP[patient.bloodType] || patient.bloodType}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="/patients/${patient.id}" class="btn btn-outline-primary" title="Ver">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="/patients/${patient.id}/edit" class="btn btn-outline-secondary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" title="Eliminar"
+                                    onclick="deletePatient(${patient.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+
+    function updatePagination(data) {
+        const pagination = document.querySelector('.pagination');
+        let html = '';
+
+        html += `
+            <li class="page-item ${data.first ? 'disabled' : ''}">
+                <a class="page-link" href="/patients/get?page=${data.number - 1}">
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </a>
+            </li>
+        `;
+
+        for (let i = 0; i < data.totalPages; i++) {
+            html += `
+                <li class="page-item ${i === data.number ? 'active' : ''}">
+                    <a class="page-link" href="/patients/get?page=${i}">${i + 1}</a>
+                </li>
+            `;
+        }
+
+        html += `
+            <li class="page-item ${data.last ? 'disabled' : ''}">
+                <a class="page-link" href="/patients/get?page=${data.number + 1}">
+                    Siguiente <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        `;
+
+        pagination.innerHTML = html;
+
+        const info = document.querySelector('.text-muted');
+        info.textContent = `Mostrando página ${data.number + 1} de ${data.totalPages} (Total: ${data.totalElements} pacientes)`;
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+
+    function deletePatient(id) {
+        if (confirm('¿Estás seguro de que deseas eliminar este paciente?')) {
+            // Implementar la lógica de eliminación aquí
+            console.log('Eliminar paciente:', id);
+        }
+    }
+</script>
 </body>
 </html>

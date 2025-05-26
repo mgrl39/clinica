@@ -44,48 +44,157 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- Aquí se listarán los odontólogos desde la base de datos -->
-                                    <tr th:each="dentist : ${dentists}" th:if="${dentists != null}">
-                                        <td th:text="${dentist.id}"></td>
-                                        <td th:text="${dentist.name}"></td>
-                                        <td th:text="${dentist.user}"></td>
-                                        <td>
-                                            <span th:if="${dentist.specialties != null && !dentist.specialties.empty}">
-                                                <span th:each="specialty, stat : ${dentist.specialties}">
-                                                    <span th:text="${specialty.name}"></span>
-                                                    <span th:unless="${stat.last}">, </span>
-                                                </span>
-                                            </span>
-                                            <span th:unless="${dentist.specialties != null && !dentist.specialties.empty}">
-                                                Sin especialidades
-                                            </span>
-                                        </td>
-                                        <td th:text="${dentist.schedule != null ? dentist.schedule.description : 'Sin horario'}"></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="#" class="btn btn-outline-primary" title="Ver">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
-                                                <a href="#" class="btn btn-outline-secondary" title="Editar">
-                                                    <i class="bi bi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-outline-danger" title="Eliminar">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    <!-- Se llenará dinámicamente por JavaScript -->
                                 </tbody>
                             </table>
+
+                            <!-- Añadir paginación -->
+                            <nav aria-label="Navegación de páginas">
+                                <ul class="pagination justify-content-center">
+                                    <!-- Aquí se inyecta la paginación vía JavaScript -->
+                                </ul>
+                            </nav>
+
+                            <!-- Información de la paginación -->
+                            <div class="text-center mt-2">
+                                <small class="text-muted">
+                                    Mostrando página 1 de 1 (Total: 0 dentistas)
+                                </small>
+                            </div>
                         </div>
                     </div>
                 </div>
             </main>
         </div>
     </div>
+
     <!-- Navegación móvil -->
     <div th:replace="~{fragments/sidebar :: mobileNav}"></div>
+
     <script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/scripts/navbar.js}"></script>
+
+    <script>
+        // Añadir el mapa de especialidades al inicio del script
+        const SPECIALTIES_MAP = {
+            1: 'Odontología General',
+            2: 'Ortodoncia',
+            3: 'Endodoncia',
+            4: 'Periodoncia',
+            5: 'Cirugía Oral',
+            6: 'Odontopediatría',
+            7: 'Implantología',
+            8: 'Estética Dental'
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentPage = urlParams.get('page') || 0;
+
+            loadDentists(currentPage);
+
+            document.querySelector('.pagination').addEventListener('click', function(e) {
+                if (e.target.closest('.page-link')) {
+                    e.preventDefault();
+                    const pageUrl = e.target.closest('.page-link').getAttribute('href');
+                    const pageNum = new URLSearchParams(new URL(pageUrl, window.location.href).search).get('page');
+                    loadDentists(pageNum);
+                    window.history.pushState({}, '', `/dentists/get?page=${pageNum}`);
+                }
+            });
+        });
+
+        function loadDentists(page) {
+            fetch(`/dentists/get?page=${page}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al obtener los dentistas');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    updateTable(data.content);
+                    updatePagination(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    if (page !== 0) {
+                        window.location.href = '/dentists/get?page=0';
+                    }
+                });
+        }
+
+        function updateTable(dentists) {
+            const tbody = document.querySelector('tbody');
+            tbody.innerHTML = '';
+
+            dentists.forEach(dentist => {
+                // Convertir los IDs de especialidades a nombres
+                const specialtiesText = Array.isArray(dentist.specialties) && dentist.specialties.length > 0
+                    ? dentist.specialties
+                        .map(id => SPECIALTIES_MAP[id] || `Especialidad ${id}`)
+                        .join(', ')
+                    : 'Sin especialidades';
+
+                const row = `
+                    <tr>
+                        <td>${dentist.idSchedule || ''}</td>
+                        <td>${dentist.name || ''}</td>
+                        <td>${dentist.user || ''}</td>
+                        <td>${specialtiesText}</td>
+                        <td>${dentist.schedule?.description || 'Sin horario'}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="#" class="btn btn-outline-primary" title="Ver">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="#" class="btn btn-outline-secondary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        function updatePagination(data) {
+            const pagination = document.querySelector('.pagination');
+            let html = '';
+
+            html += `
+                <li class="page-item ${data.first ? 'disabled' : ''}">
+                    <a class="page-link" href="/dentists/get?page=${data.number - 1}">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                </li>
+            `;
+
+            for (let i = 0; i < data.totalPages; i++) {
+                html += `
+                    <li class="page-item ${i === data.number ? 'active' : ''}">
+                        <a class="page-link" href="/dentists/get?page=${i}">${i + 1}</a>
+                    </li>
+                `;
+            }
+
+            html += `
+                <li class="page-item ${data.last ? 'disabled' : ''}">
+                    <a class="page-link" href="/dentists/get?page=${data.number + 1}">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+
+            pagination.innerHTML = html;
+
+            const info = document.querySelector('.text-muted');
+            info.textContent = `Mostrando página ${data.number + 1} de ${data.totalPages} (Total: ${data.totalElements} dentistas)`;
+        }
+    </script>
 </body>
 </html>
