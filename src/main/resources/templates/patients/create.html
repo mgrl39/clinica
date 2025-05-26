@@ -138,6 +138,11 @@
             document.getElementById('patientForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
+                // Deshabilitar el botón de submit para evitar doble envío
+                const submitButton = this.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Guardando...';
+                
                 const age = calculateAge(document.getElementById('bornDate').value);
                 let tutorData = null;
 
@@ -168,15 +173,48 @@
                         body: JSON.stringify(patientData)
                     });
 
+                    const data = await response.text();
+                    
                     if (response.ok) {
+                        // Éxito - redirigir a la lista
                         window.location.href = '/patients/list';
                     } else {
-                        const error = await response.text();
-                        alert('Error al crear el paciente: ' + error);
+                        // Manejar diferentes tipos de errores
+                        if (data.includes('Duplicate entry') || data.includes('dni')) {
+                            showError('Ya existe un paciente con ese DNI');
+                        } else {
+                            showError('Error al crear el paciente: ' + data);
+                        }
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('Error al crear el paciente');
+                    showError('Error de conexión al crear el paciente');
+                } finally {
+                    // Restaurar el botón
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="bi bi-save me-2"></i>Guardar';
+                }
+            });
+
+            // Añade validación del DNI antes de enviar
+            document.getElementById('dni').addEventListener('input', function(e) {
+                const dniValue = e.target.value.trim();
+                const dniRegex = /^[0-9]{8}[A-Z]$/;
+                
+                if (!dniRegex.test(dniValue)) {
+                    this.classList.add('is-invalid');
+                    if (!this.nextElementSibling) {
+                        const feedback = document.createElement('div');
+                        feedback.className = 'invalid-feedback';
+                        feedback.textContent = 'El DNI debe tener 8 números seguidos de una letra mayúscula';
+                        this.parentNode.appendChild(feedback);
+                    }
+                } else {
+                    this.classList.remove('is-invalid');
+                    const feedback = this.nextElementSibling;
+                    if (feedback && feedback.className === 'invalid-feedback') {
+                        feedback.remove();
+                    }
                 }
             });
         });
@@ -192,6 +230,31 @@
             }
             
             return age;
+        }
+
+        // Añade esta función para mostrar errores
+        function showError(message) {
+            // Primero, elimina cualquier alerta existente
+            const existingAlert = document.querySelector('.alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+
+            // Crear nueva alerta
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show';
+            alert.innerHTML = `
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            // Insertar la alerta antes del formulario
+            const form = document.getElementById('patientForm');
+            form.parentNode.insertBefore(alert, form);
+
+            // Hacer scroll hacia la alerta
+            alert.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     </script>
 </body>
