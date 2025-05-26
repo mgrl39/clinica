@@ -96,211 +96,377 @@
         <div th:replace="~{fragments/sidebar :: mobileNav}"></div>
     </div>
 
+    <!-- Añadir el modal para ver horario después de la tabla -->
+    <div class="modal fade" id="scheduleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Horario del Odontólogo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="dentist-name mb-3"></h6>
+                            <div class="schedule-info">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-calendar-week me-2 text-primary"></i>
+                                    <span class="schedule-days"></span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-clock me-2 text-primary"></i>
+                                    <span class="schedule-hours"></span>
+                                </div>
+                            </div>
+                            <div class="schedule-availability mt-3">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <span class="availability-text"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/scripts/navbar.js}"></script>
 
     <script>
-        // Mostrar el contenido solo si hay token
-        document.addEventListener('DOMContentLoaded', function() {
-            const authToken = localStorage.getItem('authToken');
-            if (!authToken) {
-                window.location.href = '/login';
-                return;
-            }
-            // Mostrar el contenido solo si hay token
-            document.getElementById('app').style.display = 'block';
+    // Definir el mapa de especialidades como variable global
+    const SPECIALTIES_MAP = {
+        1: 'Odontología General',
+        2: 'Ortodoncia',
+        3: 'Endodoncia',
+        4: 'Periodoncia',
+        5: 'Cirugía Oral',
+        6: 'Odontopediatría',
+        7: 'Implantología',
+        8: 'Estética Dental'
+    };
 
-            // Añadir el mapa de especialidades al inicio del script
-            const SPECIALTIES_MAP = {
-                1: 'Odontología General',
-                2: 'Ortodoncia',
-                3: 'Endodoncia',
-                4: 'Periodoncia',
-                5: 'Cirugía Oral',
-                6: 'Odontopediatría',
-                7: 'Implantología',
-                8: 'Estética Dental'
-            };
+    // Reemplazar la definición actual de SCHEDULE_HOURS por:
+    const SCHEDULE_HOURS = {
+        1: {
+            days: 'Lunes a Viernes',
+            hours: '07:00 - 14:00',
+            firstDay: 'MONDAY',
+            lastDay: 'FRIDAY',
+            firstHour: 7,
+            lastHour: 14
+        },
+        2: {
+            days: 'Lunes a Jueves',
+            hours: '13:00 - 19:00',
+            firstDay: 'MONDAY',
+            lastDay: 'THURSDAY',
+            firstHour: 13,
+            lastHour: 19
+        },
+        3: {
+            days: 'Lunes a Miércoles',
+            hours: '08:00 - 17:00',
+            firstDay: 'MONDAY',
+            lastDay: 'WEDNESDAY',
+            firstHour: 8,
+            lastHour: 17
+        },
+        4: {
+            days: 'Martes a Viernes',
+            hours: '06:30 - 13:30',
+            firstDay: 'TUESDAY',
+            lastDay: 'FRIDAY',
+            firstHour: 6.5,
+            lastHour: 13.5
+        },
+        5: {
+            days: 'Miércoles a Viernes',
+            hours: '14:00 - 20:00',
+            firstDay: 'WEDNESDAY',
+            lastDay: 'FRIDAY',
+            firstHour: 14,
+            lastHour: 20
+        }
+    };
 
-            // Mapa de horarios y sus rangos
-            const SCHEDULE_HOURS = {
-                'Mañanas (9:00 - 14:00)': { start: 9, end: 14 },
-                'Tardes (16:00 - 20:00)': { start: 16, end: 20 },
-                'Jornada completa (9:00 - 18:00)': { start: 9, end: 18 }
-            };
+    document.addEventListener('DOMContentLoaded', async function () {
+        const authToken = localStorage.getItem('authToken');
+        const userRole = localStorage.getItem('userRole');
 
-            let showOnlyAvailable = false;
-            let currentDentists = [];
+        if (!authToken) return window.location.href = '/login';
+        if (userRole === 'dentist') return window.location.href = '/error.html';
 
-            function isCurrentlyAvailable(schedule) {
-                if (!schedule?.description) return false;
+        document.getElementById('app').style.display = 'block';
 
-                const hours = SCHEDULE_HOURS[schedule.description];
-                if (!hours) return false;
-
-                const now = new Date();
-                const currentHour = now.getHours();
-                const currentDay = now.getDay();
-
-                // Si es fin de semana (0 = domingo, 6 = sábado)
-                if (currentDay === 0 || currentDay === 6) return false;
-
-                return currentHour >= hours.start && currentHour < hours.end;
-            }
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentPage = urlParams.get('page') || 0;
-
-            loadDentists(currentPage);
-
-            document.querySelector('.pagination').addEventListener('click', function(e) {
-                if (e.target.closest('.page-link')) {
-                    e.preventDefault();
-                    const pageUrl = e.target.closest('.page-link').getAttribute('href');
-                    const pageNum = new URLSearchParams(new URL(pageUrl, window.location.href).search).get('page');
-                    loadDentists(pageNum);
-                    window.history.pushState({}, '', `/dentists/get?page=${pageNum}`);
+        window.fetchWithAuth = (url, options = {}) => {
+            const fullUrl = url.startsWith('http') ? url : 'http://10.2.41.211:8080' + url;
+            return fetch(fullUrl, {
+                ...options,
+                headers: {
+                    ...options.headers,
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 }
             });
+        };
 
-            // Añadir evento para el checkbox
-            document.getElementById('showAvailable').addEventListener('change', function(e) {
-                showOnlyAvailable = e.target.checked;
-                filterAndUpdateTable();
-            });
+        window.allDentists = [];
+        window.isSearching = false;
+        window.totalPagesCount = 0;
+        window.showOnlyAvailable = false;
 
-            const userRole = localStorage.getItem('userRole');
-            if (userRole === 'dentist') {
-                window.location.href = '/error.html';
-            }
+        document.getElementById('showAvailable').addEventListener('change', function (e) {
+            window.showOnlyAvailable = e.target.checked;
+            filterAndUpdateTable();
         });
 
-        function loadDentists(page) {
-            const authToken = localStorage.getItem('authToken');
-            
-            fetch(`/dentists/get?page=${page}`, {
-                headers: {
-                    'Authorization': `Bearer ${authToken}`
-                }
-            })
-            .then(response => {
-                if (response.status === 401 || response.status === 403) {
-                    // Si el token no es válido o ha expirado
+        loadDentists(0);
+    });
+
+    // Modificar la función isCurrentlyAvailable para usar los nuevos datos:
+    function isCurrentlyAvailable(schedule) {
+        if (!schedule?.id) return false;
+        
+        const scheduleData = SCHEDULE_HOURS[schedule.id];
+        if (!scheduleData) return false;
+
+        const now = new Date();
+        const currentHour = now.getHours() + (now.getMinutes() / 60);
+        const currentDay = now.getDay(); // 0 = Domingo, 6 = Sábado
+
+        const dayMap = {
+            'MONDAY': 1,
+            'TUESDAY': 2,
+            'WEDNESDAY': 3,
+            'THURSDAY': 4,
+            'FRIDAY': 5
+        };
+
+        const firstDay = dayMap[scheduleData.firstDay];
+        const lastDay = dayMap[scheduleData.lastDay];
+
+        // Verificar si es fin de semana
+        if (currentDay === 0 || currentDay === 6) return false;
+
+        // Verificar si está dentro del rango de días
+        if (currentDay < firstDay || currentDay > lastDay) return false;
+
+        // Verificar si está dentro del horario
+        return currentHour >= scheduleData.firstHour && currentHour < scheduleData.lastHour;
+    }
+
+    function loadDentists(page) {
+        if (window.isSearching) return;
+
+        fetchWithAuth(`/dentists/get?page=${page}`)
+            .then(res => {
+                if (res.status === 401 || res.status === 403) {
                     localStorage.removeItem('authToken');
                     window.location.href = '/login';
-                    return;
+                } else if (!res.ok) {
+                    throw new Error('Error al obtener dentistas');
                 }
-                if (!response.ok) throw new Error('Error al obtener los dentistas');
-                return response.json();
+                return res.json();
             })
             .then(data => {
-                if (data) {  // Verificar que tenemos datos
-                    currentDentists = data.content;
-                    filterAndUpdateTable();
-                    updatePagination(data);
-                }
+                window.currentDentists = data.content;
+                filterAndUpdateTable();
+                updatePagination(data);
             })
             .catch(error => {
-                console.error('Error:', error);
-                if (page !== 0) {
-                    window.location.href = '/dentists/get?page=0';
-                }
+                console.error('Error al cargar:', error);
+                document.querySelector('tbody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error: ${error.message}</td></tr>`;
             });
+    }
+
+    function filterAndUpdateTable() {
+        let dentists = window.currentDentists || [];
+        if (window.showOnlyAvailable) {
+            dentists = dentists.filter(d => isCurrentlyAvailable(d.schedule));
+        }
+        updateTable(dentists);
+    }
+
+    function updateTable(dentists) {
+        const tbody = document.querySelector('tbody');
+        tbody.innerHTML = '';
+
+        dentists.forEach(dentist => {
+            const specialtiesText = Array.isArray(dentist.specialties)
+                ? dentist.specialties.map(id => SPECIALTIES_MAP[id] || `ID ${id}`).join(', ')
+                : 'Sin especialidades';
+
+            const row = `
+                <tr>
+                    <td>${dentist.idSchedule || ''}</td>
+                    <td>${dentist.name || ''}</td>
+                    <td>${dentist.user || ''}</td>
+                    <td>${specialtiesText}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info" onclick="showSchedule(${dentist.idSchedule}, '${dentist.name}')">
+                            <i class="bi bi-calendar2-week"></i> Ver Horario
+                        </button>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="/dentists/${dentist.idSchedule}" class="btn btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="/dentists/${dentist.idSchedule}/edit" class="btn btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button class="btn btn-outline-danger" onclick="deleteDentist(${dentist.idSchedule})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+
+        if (dentists.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No se encontraron dentistas</td></tr>';
+        }
+    }
+
+    function updatePagination(data) {
+        const pagination = document.querySelector('.pagination');
+        let html = '';
+
+        html += `
+            <li class="page-item ${data.first ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="loadDentists(${data.number - 1}); return false;">
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </a>
+            </li>
+        `;
+
+        for (let i = 0; i < data.totalPages; i++) {
+            html += `
+                <li class="page-item ${i === data.number ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="loadDentists(${i}); return false;">${i + 1}</a>
+                </li>
+            `;
         }
 
-        function filterAndUpdateTable() {
-            let filteredDentists = [...currentDentists];
+        html += `
+            <li class="page-item ${data.last ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="loadDentists(${data.number + 1}); return false;">
+                    Siguiente <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        `;
+
+        pagination.innerHTML = html;
+
+        const info = document.querySelector('.text-muted');
+        info.textContent = `Mostrando página ${data.number + 1} de ${data.totalPages} (Total: ${data.totalElements} dentistas)`;
+    }
+
+    function deleteDentist(id) {
+        if (confirm('¿Seguro que deseas eliminar este odontólogo?')) {
+            console.log('Eliminar odontólogo con ID:', id);
+            // Aquí puedes hacer la petición DELETE si lo necesitas
+        }
+    }
+
+    // Añadir las funciones para manejar los horarios
+    let scheduleModal;
+    document.addEventListener('DOMContentLoaded', function() {
+        // ... código existente ...
+        scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+    });
+
+    // Modificar la función showSchedule para usar los datos correctos:
+    async function showSchedule(id, dentistName) {
+        try {
+            const response = await fetchWithAuth(`/schedules/show/${id}`);
+            if (!response.ok) throw new Error('Error al obtener el horario');
             
-            if (showOnlyAvailable) {
-                filteredDentists = filteredDentists.filter(dentist => 
-                    isCurrentlyAvailable(dentist.schedule)
-                );
-            }
-
-            updateTable(filteredDentists);
-        }
-
-        function updateTable(dentists) {
-            const tbody = document.querySelector('tbody');
-            tbody.innerHTML = '';
-
-            dentists.forEach(dentist => {
-                const specialtiesText = Array.isArray(dentist.specialties) && dentist.specialties.length > 0
-                    ? dentist.specialties
-                        .map(id => SPECIALTIES_MAP[id] || `Especialidad ${id}`)
-                        .join(', ')
-                    : 'Sin especialidades';
-
-                const isAvailable = isCurrentlyAvailable(dentist.schedule);
-                const scheduleStatus = dentist.schedule?.description ? 
-                    (isAvailable ? 
-                        '<span class="badge bg-success">Disponible</span>' : 
-                        '<span class="badge bg-danger">No disponible</span>') :
-                    '<span class="badge bg-danger">Sin horario asignado</span>';
-
-                const row = `
-                    <tr>
-                        <td>${dentist.idSchedule || ''}</td>
-                        <td>${dentist.name || ''}</td>
-                        <td>${dentist.user || ''}</td>
-                        <td>${specialtiesText}</td>
-                        <td>
-                            ${dentist.schedule?.description || 'Sin horario'}
-                            <br>
-                            ${scheduleStatus}
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <a href="#" class="btn btn-outline-primary" title="Ver">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="#" class="btn btn-outline-secondary" title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <button type="button" class="btn btn-outline-danger" title="Eliminar">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', row);
+            const schedule = await response.json();
+            
+            // Formatear las horas
+            const firstHour = new Date(schedule.firstHour).toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
             });
-        }
+            const lastHour = new Date(schedule.lastHour).toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
 
-        function updatePagination(data) {
-            const pagination = document.querySelector('.pagination');
-            let html = '';
+            const dayTranslations = {
+                'MONDAY': 'Lunes',
+                'TUESDAY': 'Martes',
+                'WEDNESDAY': 'Miércoles',
+                'THURSDAY': 'Jueves',
+                'FRIDAY': 'Viernes'
+            };
 
-            html += `
-                <li class="page-item ${data.first ? 'disabled' : ''}">
-                    <a class="page-link" href="/dentists/get?page=${data.number - 1}">
-                        <i class="bi bi-chevron-left"></i> Anterior
-                    </a>
-                </li>
-            `;
+            const firstDay = dayTranslations[schedule.firstDay];
+            const lastDay = dayTranslations[schedule.lastDay];
 
-            for (let i = 0; i < data.totalPages; i++) {
-                html += `
-                    <li class="page-item ${i === data.number ? 'active' : ''}">
-                        <a class="page-link" href="/dentists/get?page=${i}">${i + 1}</a>
-                    </li>
-                `;
+            // Actualizar el modal
+            document.querySelector('.dentist-name').textContent = dentistName;
+            document.querySelector('.schedule-days').textContent = `${firstDay} a ${lastDay}`;
+            document.querySelector('.schedule-hours').textContent = `${firstHour} a ${lastHour}`;
+
+            // Determinar disponibilidad actual
+            const now = new Date();
+            const currentDay = now.getDay();
+            const currentHour = now.getHours() + (now.getMinutes() / 60);
+
+            const scheduleFirstHour = parseFloat(firstHour.split(':')[0]);
+            const scheduleLastHour = parseFloat(lastHour.split(':')[0]);
+
+            const dayMap = {
+                'MONDAY': 1,
+                'TUESDAY': 2,
+                'WEDNESDAY': 3,
+                'THURSDAY': 4,
+                'FRIDAY': 5
+            };
+
+            const firstDayNum = dayMap[schedule.firstDay];
+            const lastDayNum = dayMap[schedule.lastDay];
+
+            let availabilityText = '';
+            let availabilityClass = '';
+
+            if (currentDay === 0 || currentDay === 6) {
+                availabilityText = 'No disponible (Fin de semana)';
+                availabilityClass = 'alert-warning';
+            } else if (currentDay < firstDayNum || currentDay > lastDayNum) {
+                availabilityText = 'No disponible hoy';
+                availabilityClass = 'alert-warning';
+            } else if (currentHour < scheduleFirstHour) {
+                availabilityText = 'Disponible más tarde hoy';
+                availabilityClass = 'alert-info';
+            } else if (currentHour >= scheduleLastHour) {
+                availabilityText = 'No disponible (Horario finalizado)';
+                availabilityClass = 'alert-danger';
+            } else {
+                availabilityText = '¡Disponible ahora!';
+                availabilityClass = 'alert-success';
             }
 
-            html += `
-                <li class="page-item ${data.last ? 'disabled' : ''}">
-                    <a class="page-link" href="/dentists/get?page=${data.number + 1}">
-                        Siguiente <i class="bi bi-chevron-right"></i>
-                    </a>
-                </li>
-            `;
+            const availabilityDiv = document.querySelector('.schedule-availability .alert');
+            availabilityDiv.className = `alert ${availabilityClass}`;
+            availabilityDiv.querySelector('.availability-text').textContent = availabilityText;
 
-            pagination.innerHTML = html;
-
-            const info = document.querySelector('.text-muted');
-            info.textContent = `Mostrando página ${data.number + 1} de ${data.totalPages} (Total: ${data.totalElements} dentistas)`;
+            scheduleModal.show();
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error al cargar el horario');
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>

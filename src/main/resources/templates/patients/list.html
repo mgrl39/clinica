@@ -104,6 +104,104 @@
                                     <!-- Se actualizará dinámicamente -->
                                 </small>
                             </div>
+
+                            <!-- Modal para agendar cita -->
+                            <div class="modal fade" id="scheduleVisitModal" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Agendar Cita</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="visitForm">
+                                                <input type="hidden" id="patientDni">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Paciente</label>
+                                                    <input type="text" class="form-control" id="patientName" readonly>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Odontólogo</label>
+                                                    <select class="form-select" id="dentistSelect" required>
+                                                        <option value="">Seleccione un odontólogo...</option>
+                                                    </select>
+                                                    <div class="form-text">
+                                                        <i class="bi bi-info-circle me-1"></i>
+                                                        Seleccione primero el odontólogo para ver sus horarios disponibles
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Fecha y Hora</label>
+                                                    <input type="datetime-local" class="form-control" id="visitDateTime" required disabled>
+                                                    <div class="form-text" id="scheduleInfo"></div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Tipo de Visita</label>
+                                                    <select class="form-select" id="visitType" required>
+                                                        <option value="REVISION">Revisión</option>
+                                                        <option value="LIMPIEZA">Limpieza</option>
+                                                        <option value="TRATAMIENTO">Tratamiento</option>
+                                                        <option value="URGENCIA">Urgencia</option>
+                                                    </select>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="button" class="btn btn-primary" id="saveVisit">Guardar Cita</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal para editar paciente -->
+                            <div class="modal fade" id="editPatientModal" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Editar Paciente</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="editPatientForm">
+                                                <input type="hidden" id="editPatientId">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Nombre</label>
+                                                    <input type="text" class="form-control" id="editName" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">DNI</label>
+                                                    <input type="text" class="form-control" id="editDni" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Tipo</label>
+                                                    <select class="form-select" id="editType" required>
+                                                        <option value="MUTUAL">Mutualista</option>
+                                                        <option value="PARTICULAR">Particular</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Grupo Sanguíneo</label>
+                                                    <select class="form-select" id="editBloodType" required>
+                                                        <option value="A_POSITIVE">A+</option>
+                                                        <option value="A_NEGATIVE">A-</option>
+                                                        <option value="B_POSITIVE">B+</option>
+                                                        <option value="B_NEGATIVE">B-</option>
+                                                        <option value="AB_POSITIVE">AB+</option>
+                                                        <option value="AB_NEGATIVE">AB-</option>
+                                                        <option value="O_POSITIVE">O+</option>
+                                                        <option value="O_NEGATIVE">O-</option>
+                                                    </select>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="button" class="btn btn-primary" id="saveEditPatient">Guardar Cambios</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </main>
@@ -126,11 +224,15 @@
 
             // Definir fetchWithAuth para todas las peticiones
             window.fetchWithAuth = (url, options = {}) => {
-                return fetch(url, {
+                const token = localStorage.getItem('authToken');
+                const fullUrl = url.startsWith('http') ? url : window.location.origin + url;
+                
+                return fetch(fullUrl, {
                     ...options,
                     headers: {
                         ...options.headers,
-                        'Authorization': `Bearer ${authToken}`,
+                        'Authorization': `Bearer ${token}`,
+                        'token': token,
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
@@ -156,10 +258,29 @@
                 'PARTICULAR': 'Particular'
             };
 
+            // Definir mapa de especialidades
+            window.SPECIALTIES_MAP = {
+                1: 'Odontología General',
+                2: 'Ortodoncia',
+                3: 'Endodoncia',
+                4: 'Periodoncia',
+                5: 'Cirugía Oral',
+                6: 'Odontopediatría',
+                7: 'Implantología',
+                8: 'Estética Dental'
+            };
+
             // Variables globales para la búsqueda
             window.allPatients = [];
             window.isSearching = false;
             window.totalPagesCount = 0;
+            
+            // Variable global para almacenar los dentistas y sus horarios
+            window.dentistsData = {
+                loaded: false,
+                dentists: [],
+                schedules: {}
+            };
 
             // Eventos de búsqueda
             document.getElementById('searchButton').addEventListener('click', performSearch);
@@ -174,8 +295,27 @@
                 });
             });
 
-            // Cargar la primera página
-            loadPatients(0);
+            // Inicializar el modal correctamente
+            window.visitModal = new bootstrap.Modal(document.getElementById('scheduleVisitModal'));
+            window.editModal = new bootstrap.Modal(document.getElementById('editPatientModal'));
+
+            // Configurar eventos
+            document.getElementById('dentistSelect').addEventListener('change', updateDateTimeInput);
+            document.getElementById('visitDateTime').addEventListener('change', validateDateTime);
+            document.getElementById('saveVisit').addEventListener('click', createVisit);
+            
+            // Cargar datos en paralelo: pacientes y dentistas
+            try {
+                // Iniciar ambas cargas en paralelo
+                const patientsPromise = loadPatients(0);
+                const dentistsPromise = preloadDentistsData();
+                
+                // Esperar a que ambas cargas terminen
+                await Promise.all([patientsPromise, dentistsPromise]);
+                console.log('Datos de pacientes y dentistas cargados correctamente');
+            } catch (error) {
+                console.error('Error cargando datos iniciales:', error);
+            }
         });
 
         function loadPatients(page) {
@@ -225,16 +365,12 @@
                             </span>
                         </td>
                         <td>
-                            <div class="btn-group btn-group-sm">
-                                <a href="/patients/${patient.id}" class="btn btn-outline-primary" title="Ver">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="/patients/${patient.id}/edit" class="btn btn-outline-secondary" title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <button type="button" class="btn btn-outline-danger" title="Eliminar"
-                                        onclick="deletePatient(${patient.id})">
-                                    <i class="bi bi-trash"></i>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-primary" onclick="scheduleVisit('${patient.dni}', '${patient.name}')" title="Agendar Cita">
+                                    <i class="bi bi-calendar-plus"></i> Cita
+                                </button>
+                                <button class="btn btn-sm btn-secondary" onclick="editPatient(${patient.id})" title="Editar">
+                                    <i class="bi bi-pencil"></i> Editar
                                 </button>
                             </div>
                         </td>
@@ -363,6 +499,335 @@
                 console.log('Eliminar paciente:', id);
             }
         }
+
+        // Función para precargar datos de dentistas y sus horarios
+        async function preloadDentistsData() {
+            try {
+                console.log('Precargando datos de odontólogos...');
+                const fullUrl = window.location.origin + '/dentists/get?page=0';
+                
+                const response = await fetchWithAuth(fullUrl);
+                if (!response.ok) throw new Error(`Error al cargar odontólogos: ${response.status}`);
+                
+                const data = await response.json();
+                console.log('Datos de odontólogos recibidos:', data);
+                
+                // Guardar los dentistas en la variable global
+                window.dentistsData.dentists = data.content;
+                
+                // Cargar los horarios de cada dentista
+                const schedulePromises = data.content.map(async dentist => {
+                    try {
+                        const scheduleResponse = await fetchWithAuth(`/schedules/show/${dentist.idSchedule}`);
+                        if (!scheduleResponse.ok) return null;
+                        
+                        const schedule = await scheduleResponse.json();
+                        window.dentistsData.schedules[dentist.idSchedule] = schedule;
+                        return { dentistId: dentist.idSchedule, schedule };
+                    } catch (error) {
+                        console.error(`Error al cargar horario del dentista ${dentist.name}:`, error);
+                        return null;
+                    }
+                });
+                
+                // Esperar a que se carguen todos los horarios
+                await Promise.all(schedulePromises);
+                
+                // Marcar como cargado
+                window.dentistsData.loaded = true;
+                console.log('Datos de odontólogos y horarios precargados correctamente');
+                
+                return window.dentistsData;
+            } catch (error) {
+                console.error('Error al precargar datos de odontólogos:', error);
+                throw error;
+            }
+        }
+        
+        // Función para cargar dentistas al abrir el modal usando datos precargados
+        async function scheduleVisit(dni, name) {
+            try {
+                document.getElementById('patientDni').value = dni;
+                document.getElementById('patientName').value = name;
+                
+                const dentistSelect = document.getElementById('dentistSelect');
+                dentistSelect.innerHTML = '<option value="">Cargando odontólogos...</option>';
+                dentistSelect.disabled = true;
+
+                if (!window.dentistsData.loaded) {
+                    await preloadDentistsData();
+                }
+
+                dentistSelect.innerHTML = '<option value="">Seleccione un odontólogo...</option>';
+                
+                for (const dentist of window.dentistsData.dentists) {
+                    const schedule = window.dentistsData.schedules[dentist.idSchedule];
+                    if (!schedule) continue;
+                    
+                    const option = document.createElement('option');
+                    option.value = dentist.id;
+                    option.dataset.dentistInfo = JSON.stringify(dentist);
+                    option.dataset.schedule = JSON.stringify(schedule);
+
+                    const firstHour = new Date(schedule.firstHour).toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    const lastHour = new Date(schedule.lastHour).toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    const dayMap = {
+                        'MONDAY': 'Lunes',
+                        'TUESDAY': 'Martes',
+                        'WEDNESDAY': 'Miércoles',
+                        'THURSDAY': 'Jueves',
+                        'FRIDAY': 'Viernes'
+                    };
+
+                    const scheduleText = `${dayMap[schedule.firstDay]} a ${dayMap[schedule.lastDay]} (${firstHour} - ${lastHour})`;
+                    const specialties = dentist.specialties
+                        .map(id => SPECIALTIES_MAP[id] || `Especialidad ${id}`)
+                        .join(', ');
+
+                    option.textContent = `${dentist.name} - ${specialties} - ${scheduleText}`;
+                    dentistSelect.appendChild(option);
+                }
+
+                dentistSelect.disabled = false;
+                visitModal.show();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al cargar los odontólogos. Por favor, inténtelo de nuevo.');
+            }
+        }
+
+        function updateDateTimeInput() {
+            const dentistSelect = document.getElementById('dentistSelect');
+            const dateTimeInput = document.getElementById('visitDateTime');
+            const scheduleInfo = document.getElementById('scheduleInfo');
+            
+            if (!dentistSelect.value) {
+                dateTimeInput.disabled = true;
+                scheduleInfo.textContent = '';
+                return;
+            }
+
+            const schedule = JSON.parse(dentistSelect.selectedOptions[0].dataset.schedule);
+            
+            // Configurar fecha mínima (mañana) y máxima (3 meses)
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(parseInt(schedule.firstHour.slice(11, 13)), parseInt(schedule.firstHour.slice(14, 16)), 0, 0);
+            
+            const maxDate = new Date();
+            maxDate.setMonth(maxDate.getMonth() + 3);
+            maxDate.setHours(parseInt(schedule.lastHour.slice(11, 13)), parseInt(schedule.lastHour.slice(14, 16)), 0, 0);
+
+            // Configurar restricciones del input datetime-local
+            dateTimeInput.min = tomorrow.toISOString().slice(0, 16);
+            dateTimeInput.max = maxDate.toISOString().slice(0, 16);
+            dateTimeInput.disabled = false;
+
+            // Mostrar información del horario
+            const dayMap = {
+                'MONDAY': 'Lunes',
+                'TUESDAY': 'Martes',
+                'WEDNESDAY': 'Miércoles',
+                'THURSDAY': 'Jueves',
+                'FRIDAY': 'Viernes'
+            };
+
+            const firstHour = new Date(schedule.firstHour).toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            const lastHour = new Date(schedule.lastHour).toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            scheduleInfo.innerHTML = `
+                <i class="bi bi-clock me-1"></i>
+                Horario disponible: ${dayMap[schedule.firstDay]} a ${dayMap[schedule.lastDay]}, 
+                de ${firstHour} a ${lastHour}
+            `;
+        }
+
+        function validateDateTime() {
+            const dateTimeInput = document.getElementById('visitDateTime');
+            const selectedOption = document.getElementById('dentistSelect').selectedOptions[0];
+            
+            if (!dateTimeInput.value || !selectedOption?.dataset.schedule) return false;
+            
+            const selectedDate = new Date(dateTimeInput.value);
+            const schedule = JSON.parse(selectedOption.dataset.schedule);
+            
+            // Mapeo de días para coincidir con el enum WeekDay del backend
+            const dayMap = {
+                0: 'SUNDAY',
+                1: 'MONDAY',
+                2: 'TUESDAY',
+                3: 'WEDNESDAY',
+                4: 'THURSDAY',
+                5: 'FRIDAY',
+                6: 'SATURDAY'
+            };
+            
+            const visitDay = dayMap[selectedDate.getDay()];
+            
+            // Validar día de la semana usando los valores del enum
+            if (!visitDay || visitDay === 'SUNDAY' || visitDay === 'SATURDAY') {
+                alert('No se pueden agendar citas en fin de semana');
+                dateTimeInput.value = '';
+                return false;
+            }
+
+            if (visitDay < schedule.firstDay || visitDay > schedule.lastDay) {
+                alert('La fecha seleccionada está fuera del horario del odontólogo');
+                dateTimeInput.value = '';
+                return false;
+            }
+            
+            // Validar hora
+            const selectedTime = selectedDate.getHours() + (selectedDate.getMinutes() / 60);
+            const scheduleFirstHour = new Date(schedule.firstHour).getHours() + 
+                             (new Date(schedule.firstHour).getMinutes() / 60);
+            const scheduleLastHour = new Date(schedule.lastHour).getHours() + 
+                            (new Date(schedule.lastHour).getMinutes() / 60);
+            
+            if (selectedTime < scheduleFirstHour || selectedTime >= scheduleLastHour) {
+                alert('La hora seleccionada está fuera del horario del odontólogo');
+                dateTimeInput.value = '';
+                return false;
+            }
+            
+            return true;
+        }
+
+        async function createVisit() {
+            if (!validateDateTime()) {
+                return;
+            }
+
+            try {
+                const dateTimeInput = document.getElementById('visitDateTime');
+                const selectedDateTime = new Date(dateTimeInput.value);
+                
+                // Formatear la fecha y hora como los espera el backend
+                const date = selectedDateTime.toISOString().split('T')[0]; // YYYY-MM-DD
+                const time = selectedDateTime.toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                });
+
+                const visitData = {
+                    dni: document.getElementById('patientDni').value,
+                    id_dentist: parseInt(document.getElementById('dentistSelect').value),
+                    date: date,
+                    time: time,
+                    reason: document.getElementById('visitType').value,
+                    comment: '' // Campo opcional
+                };
+
+                console.log('Datos a enviar:', visitData);
+
+                const response = await fetchWithAuth('/visits/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'token': localStorage.getItem('authToken')
+                    },
+                    body: JSON.stringify(visitData)
+                });
+
+                const responseData = await response.json();
+                console.log('Respuesta del servidor:', responseData);
+
+                if (!responseData.success) {
+                    throw new Error(responseData.message || 'Error al crear la cita');
+                }
+
+                visitModal.hide();
+                showSuccessAlert('Cita agendada correctamente');
+                document.getElementById('visitForm').reset();
+            } catch (error) {
+                console.error('Error completo:', error);
+                alert('Error al agendar la cita: ' + error.message);
+            }
+        }
+
+        let editModal;
+        async function editPatient(id) {
+            try {
+                const response = await fetchWithAuth(`/patients/${id}`);
+                if (!response.ok) throw new Error('Error al obtener datos del paciente');
+                
+                const patient = await response.json();
+                
+                // Llenar el formulario
+                document.getElementById('editPatientId').value = patient.id;
+                document.getElementById('editName').value = patient.name;
+                document.getElementById('editDni').value = patient.dni;
+                document.getElementById('editType').value = patient.type;
+                document.getElementById('editBloodType').value = patient.bloodType;
+                
+                editModal.show();
+            } catch (error) {
+                alert('Error al cargar datos del paciente: ' + error.message);
+            }
+        }
+
+        async function saveEditPatient() {
+            const patientData = {
+                id: document.getElementById('editPatientId').value,
+                name: document.getElementById('editName').value,
+                dni: document.getElementById('editDni').value,
+                type: document.getElementById('editType').value,
+                bloodType: document.getElementById('editBloodType').value
+            };
+
+            try {
+                const response = await fetchWithAuth(`/patients/update`, {
+                    method: 'POST',
+                    body: JSON.stringify(patientData)
+                });
+
+                if (!response.ok) throw new Error('Error al actualizar paciente');
+
+                editModal.hide();
+                showSuccessAlert('Paciente actualizado correctamente');
+                loadPatients(0); // Recargar la lista
+            } catch (error) {
+                alert('Error al guardar cambios: ' + error.message);
+            }
+        }
+
+        // Función helper para mostrar alertas de éxito
+        function showSuccessAlert(message) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+            alert.innerHTML = `
+                <i class="bi bi-check-circle me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        // Eventos
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... código existente ...
+            
+            // Cuando se selecciona un odontólogo, actualizar el input de fecha/hora
+            document.getElementById('dentistSelect').addEventListener('change', updateDateTimeInput);
+            
+            // Validar la fecha/hora cuando se selecciona
+            document.getElementById('visitDateTime').addEventListener('change', validateDateTime);
+        });
     </script>
 </body>
 </html>

@@ -134,10 +134,16 @@
                                     <label for="idSchedule" class="form-label">Horario</label>
                                     <select class="form-select" id="idSchedule" name="idSchedule" required>
                                         <option value="">Seleccione un horario</option>
-                                        <option value="1">Mañanas (9:00 - 14:00)</option>
-                                        <option value="2">Tardes (16:00 - 20:00)</option>
-                                        <option value="3">Jornada completa (9:00 - 18:00)</option>
+                                        <option value="1">Lunes a Viernes (07:00 - 14:00)</option>
+                                        <option value="2">Lunes a Jueves (13:00 - 19:00)</option>
+                                        <option value="3">Lunes a Miércoles (08:00 - 17:00)</option>
+                                        <option value="4">Martes a Viernes (06:30 - 13:30)</option>
+                                        <option value="5">Miércoles a Viernes (14:00 - 20:00)</option>
                                     </select>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Los horarios mostrados corresponden a los turnos disponibles en el sistema
+                                    </div>
                                 </div>
                                 
                                 <div class="col-12 mt-4">
@@ -233,21 +239,30 @@
                 };
 
                 try {
-                    const response = await fetch('/dentists/create', {
+                    const token = localStorage.getItem('authToken');
+                    console.log('Token:', token); // Para debug
+                    console.log('Datos a enviar:', dentistData); // Para debug
+
+                    const response = await fetch('http://10.2.41.211:8080/dentists/create', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': localStorage.getItem('authToken') || ''
+                            'token': token, // Asegurarnos que el token va como header
+                            'Authorization': `Bearer ${token}` // Añadimos también el Bearer token por si acaso
                         },
                         body: JSON.stringify(dentistData)
                     });
 
+                    console.log('Respuesta status:', response.status); // Para debug
+
                     if (!response.ok) {
                         const errorData = await response.text();
+                        console.error('Error response:', errorData); // Para debug
                         throw new Error(errorData || 'Error al crear el dentista');
                     }
 
                     const data = await response.json();
+                    console.log('Respuesta exitosa:', data); // Para debug
                     
                     // Mostrar éxito
                     successAlert.style.display = 'block';
@@ -262,12 +277,11 @@
                     }, 2000);
 
                 } catch (error) {
-                    console.error('Error:', error);
+                    console.error('Error completo:', error);
                     errorMessage.textContent = error.message;
                     errorAlert.style.display = 'block';
                     successAlert.style.display = 'none';
                 } finally {
-                    // Restaurar botón
                     submitButton.disabled = false;
                     submitButton.innerHTML = '<i class="bi bi-save me-2"></i>Guardar';
                 }
