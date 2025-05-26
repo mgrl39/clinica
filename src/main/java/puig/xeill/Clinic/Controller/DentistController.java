@@ -56,7 +56,7 @@ public class DentistController {
         }
         return null;
     }
-    @GetMapping("")
+    @GetMapping("/get")
     public Page<DentistDTO> getDentist (@RequestParam int page) {
         List<Dentist> dentistList  = dentistRepository.findAll();
         List<DentistDTO> dentistDTOList = new ArrayList<>();
@@ -105,8 +105,8 @@ public class DentistController {
 
             Dentist dentist = new Dentist();
             dentist.setUser(dentistDTO.getUser());
-            dentist.setName(dentistDTO.getName());
-            dentist.setPassword(dentistDTO.getPassword());
+            dentist.setName(passwordEncoder.encode(dentistDTO.getName()));
+            dentist.setPassword(passwordEncoder.encode(dentistDTO.getPassword()));
             dentist.setIdSchedule(dentistDTO.getIdSchedule());
             dentist.setSpecialties(specialties);
             System.out.println(dentist.getSpecialties());
@@ -114,8 +114,4 @@ public class DentistController {
             return dentistDTO;
     }
 
-
-    public List<Dentist> show() {
-        return null;
-    }
 }

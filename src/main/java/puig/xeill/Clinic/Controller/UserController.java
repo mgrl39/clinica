@@ -31,7 +31,7 @@ public class UserController {
     @Autowired
     SpecialtyRepository specialtyRepository;
 
-    @GetMapping("")
+    @GetMapping("/get")
     public Page<Object> get(@RequestParam int page, @RequestParam int size) {
         List<Dentist> dentistList = dentistRepository.findAll();
         List<DentistDTO> dentistDTOList = new ArrayList<>();

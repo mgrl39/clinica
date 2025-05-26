@@ -39,14 +39,15 @@ public class PatientController {
         //return null;
     }
 
-    @GetMapping("")
+    @GetMapping("/get")
     public Page<Patient> getPatients (@RequestParam int page) {
         return patientRepository.findAll(Pageable.ofSize(10).withPage(page));
     }
 
     @PostMapping("/create")
     public Patient show(@RequestBody Patient patient) {
-
+        patient.setName(passwordEncoder.encode(patient.getName()));
+        patient.setDni(passwordEncoder.encode(patient.getDni()));
         patientRepository.save(patient);
 
         return null;
