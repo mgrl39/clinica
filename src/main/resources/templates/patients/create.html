@@ -31,33 +31,68 @@
                     
                     <div class="card shadow-sm mb-5">
                         <div class="card-body">
-                            <form action="/patients/create" method="post" class="row g-3">
+                            <form id="patientForm" class="row g-3">
                                 <!-- Información personal -->
                                 <div class="col-md-6">
-                                    <label for="name" class="form-label">Nombre completo</label>
-                                    <input type="text" class="form-control" id="name" name="name" required>
+                                    <label for="name" class="form-label">Nombre completo *</label>
+                                    <input type="text" class="form-control" id="name" required>
                                 </div>
                                 
                                 <div class="col-md-6">
-                                    <label for="email" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="email" name="email" required>
+                                    <label for="dni" class="form-label">DNI *</label>
+                                    <input type="text" class="form-control" id="dni" required>
                                 </div>
                                 
                                 <div class="col-md-6">
-                                    <label for="phone" class="form-label">Teléfono</label>
-                                    <input type="tel" class="form-control" id="phone" name="phone">
+                                    <label for="bornDate" class="form-label">Fecha de nacimiento *</label>
+                                    <input type="date" class="form-control" id="bornDate" required>
                                 </div>
-                                
+
                                 <div class="col-md-6">
-                                    <label for="birthDate" class="form-label">Fecha de nacimiento</label>
-                                    <input type="date" class="form-control" id="birthDate" name="birthDate">
+                                    <label for="type" class="form-label">Tipo de paciente *</label>
+                                    <select class="form-select" id="type" required>
+                                        <option value="MUTUAL">Mutualista</option>
+                                        <option value="PARTICULAR">Particular</option>
+                                    </select>
                                 </div>
-                                
-                                <div class="col-md-12">
-                                    <label for="address" class="form-label">Dirección</label>
-                                    <input type="text" class="form-control" id="address" name="address">
+
+                                <div class="col-md-6">
+                                    <label for="bloodType" class="form-label">Grupo sanguíneo *</label>
+                                    <select class="form-select" id="bloodType" required>
+                                        <option value="A_POSITIVE">A+</option>
+                                        <option value="A_NEGATIVE">A-</option>
+                                        <option value="B_POSITIVE">B+</option>
+                                        <option value="B_NEGATIVE">B-</option>
+                                        <option value="O_POSITIVE">O+</option>
+                                        <option value="O_NEGATIVE">O-</option>
+                                        <option value="AB_POSITIVE">AB+</option>
+                                        <option value="AB_NEGATIVE">AB-</option>
+                                    </select>
                                 </div>
-                                
+
+                                <!-- Sección de tutor (inicialmente oculta) -->
+                                <div id="tutorSection" class="col-12 mt-4" style="display: none;">
+                                    <div class="card">
+                                        <div class="card-header bg-light">
+                                            <h5 class="mb-0">Información del Tutor</h5>
+                                        </div>
+                                        <div class="card-body row g-3">
+                                            <div class="col-md-6">
+                                                <label for="tutorName" class="form-label">Nombre del tutor *</label>
+                                                <input type="text" class="form-control" id="tutorName">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="tutorDNI" class="form-label">DNI del tutor *</label>
+                                                <input type="text" class="form-control" id="tutorDNI">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="tutorPhone" class="form-label">Teléfono del tutor *</label>
+                                                <input type="tel" class="form-control" id="tutorPhone">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="col-12 mt-4">
                                     <button type="submit" class="btn btn-primary px-4 me-2">
                                         <i class="bi bi-save me-2"></i>Guardar
@@ -86,7 +121,78 @@
                 return;
             }
             document.getElementById('app').style.display = 'block';
+
+            // Verificar edad y mostrar/ocultar sección de tutor
+            const bornDateInput = document.getElementById('bornDate');
+            bornDateInput.addEventListener('change', function() {
+                const age = calculateAge(this.value);
+                const tutorSection = document.getElementById('tutorSection');
+                tutorSection.style.display = age < 18 ? 'block' : 'none';
+
+                // Actualizar required en campos del tutor
+                const tutorInputs = tutorSection.querySelectorAll('input');
+                tutorInputs.forEach(input => input.required = age < 18);
+            });
+
+            // Manejar envío del formulario
+            document.getElementById('patientForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const age = calculateAge(document.getElementById('bornDate').value);
+                let tutorData = null;
+
+                if (age < 18) {
+                    tutorData = {
+                        name: document.getElementById('tutorName').value,
+                        dni: document.getElementById('tutorDNI').value,
+                        phone: document.getElementById('tutorPhone').value
+                    };
+                }
+
+                const patientData = {
+                    name: document.getElementById('name').value,
+                    dni: document.getElementById('dni').value,
+                    bornDate: document.getElementById('bornDate').value,
+                    type: document.getElementById('type').value,
+                    bloodType: document.getElementById('bloodType').value,
+                    tutor: tutorData ? JSON.stringify(tutorData) : null
+                };
+
+                try {
+                    const response = await fetch('/patients/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify(patientData)
+                    });
+
+                    if (response.ok) {
+                        window.location.href = '/patients/list';
+                    } else {
+                        const error = await response.text();
+                        alert('Error al crear el paciente: ' + error);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error al crear el paciente');
+                }
+            });
         });
+
+        function calculateAge(birthDate) {
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
     </script>
 </body>
 </html>
