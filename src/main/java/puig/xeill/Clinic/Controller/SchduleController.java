@@ -15,13 +15,6 @@ public class SchduleController {
     @Autowired
     ScheduleRepository scheduleRepository;
 
-    public String create(@RequestBody Schedule shedule){
-        return "";
-    }
-    public String edit(@RequestBody Schedule schedule) {
-        return "";
-    }
-
     @GetMapping("/show/{id}")
     public Optional<Schedule> show(@PathVariable Long id) {
         Optional<Schedule> schedule = scheduleRepository.findById(id);
