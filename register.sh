@@ -1,4 +1,4 @@
-curl -X POST http://10.2.41.211:8080/admins/register \
+curl -X POST http://localhost:8080/admins/register \
 -H "Content-Type: application/json" \
 -d '{
     "user": "admin3",

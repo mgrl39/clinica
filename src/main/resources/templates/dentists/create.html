@@ -243,7 +243,7 @@
                     console.log('Token:', token); // Para debug
                     console.log('Datos a enviar:', dentistData); // Para debug
 
-                    const response = await fetch('http://10.2.41.211:8080/dentists/create', {
+                    const response = await fetch('http://localhost:8080/dentists/create', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
