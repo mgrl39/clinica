@@ -32,6 +32,8 @@ public class AdminController {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+
+
     //@Autowired
     JwtUtil jwtUtil = new JwtUtil();
 
@@ -41,6 +43,7 @@ public class AdminController {
         System.out.println(id);
         Optional<Admin> admin = adminRepository.findById(id);
         System.out.println(new Date());
+        admin.get().setUser(passwordEncoder.de);
         return admin;
         //return null;
     }
