@@ -43,7 +43,7 @@ public class AdminController {
         System.out.println(id);
         Optional<Admin> admin = adminRepository.findById(id);
         System.out.println(new Date());
-        admin.get().setUser(passwordEncoder.de);
+        //admin.get().setUser(passwordEncoder.de);
         return admin;
         //return null;
     }
