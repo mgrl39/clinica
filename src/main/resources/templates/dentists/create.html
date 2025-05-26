@@ -269,6 +269,11 @@
                     submitButton.innerHTML = '<i class="bi bi-save me-2"></i>Guardar';
                 }
             });
+
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'dentist') {
+                window.location.href = '/error.html';
+            }
         });
     </script>
 </body>

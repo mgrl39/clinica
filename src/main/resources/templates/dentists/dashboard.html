@@ -59,6 +59,13 @@
             // Mostrar el contenido solo si hay token
             document.getElementById('app').style.display = 'block';
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'dentist') {
+                window.location.href = '/error.html';
+            }
+        });
     </script>
 </body>
 </html>

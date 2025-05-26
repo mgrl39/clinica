@@ -168,9 +168,32 @@
     <script th:fragment="sidebarScript">
         document.addEventListener('DOMContentLoaded', function() {
             const authToken = localStorage.getItem('authToken');
+            const userRole = localStorage.getItem('userRole');
+            
             if (!authToken) {
                 window.location.href = '/login';
                 return;
+            }
+
+            // Ocultar elementos según el rol
+            if (userRole === 'dentist') {
+                // Ocultar sección de Odontólogos
+                const dentistsSection = document.querySelector('a[href="#odontologosSubmenu"]').closest('.nav-item');
+                if (dentistsSection) dentistsSection.style.display = 'none';
+
+                // Ocultar sección de Usuarios
+                const usersSection = document.querySelector('a[href="#usuariosSubmenu"]').closest('.nav-item');
+                if (usersSection) usersSection.style.display = 'none';
+
+                // Ocultar elementos del navbar móvil
+                const mobileNav = document.querySelector('.navbar-dark.bg-primary');
+                if (mobileNav) {
+                    const restrictedMobileLinks = mobileNav.querySelectorAll('a[href*="/dentists"], a[href*="/users"]');
+                    restrictedMobileLinks.forEach(link => {
+                        const listItem = link.closest('.nav-item');
+                        if (listItem) listItem.style.display = 'none';
+                    });
+                }
             }
 
             // Marcar el ítem activo del menú

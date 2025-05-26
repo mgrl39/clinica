@@ -126,6 +126,11 @@
             }
             document.getElementById('app').style.display = 'block';
 
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'dentist') {
+                window.location.href = '/error.html';
+            }
+
             // Añadir el token a todas las peticiones fetch
             const fetchWithAuth = (url, options = {}) => {
                 return fetch(url, {

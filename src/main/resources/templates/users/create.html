@@ -103,6 +103,10 @@
                 window.location.href = '/login';
                 return;
             }
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'dentist') {
+                window.location.href = '/error.html';
+            }
             document.getElementById('app').style.display = 'block';
         });
     </script>
