@@ -94,7 +94,7 @@ public class UserController {
 
 
     @PostMapping("login")
-    public String loginDentist(@RequestBody Dentist user) throws NoSuchAlgorithmException, KeyStoreException {
+    public String login(@RequestBody Dentist user) throws NoSuchAlgorithmException, KeyStoreException {
         // Primero buscar si es dentista
         Optional<Dentist> dentistOptional = dentistRepository.findByUser(user.getUser());
         if (dentistOptional.isPresent()) {

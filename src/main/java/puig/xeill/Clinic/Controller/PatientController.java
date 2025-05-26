@@ -90,6 +90,7 @@ public class PatientController {
 
         patient.setName(Security.encrypt(patient.getName()));
         patient.setDni(Security.encrypt(patient.getDni()));
+
         patientRepository.save(patient);
 
         return null;
